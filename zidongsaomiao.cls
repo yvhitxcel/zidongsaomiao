@@ -132,7 +132,7 @@ Sub worker() '图片处理工人
                 lngCor = GetPixel(lDC, x, Mnub)
                 R = lngCor Mod 256
                 If R < 200 Then
-                    If ((x - Xtmp) > 2 and Xtmp > 0 and (Yarea2- Yarea1) < 100) Then x = Xtmp
+                    If ((x - Xtmp) > 2 and Xtmp > 0) Then x = Xtmp
                     Xarea1 = x - 10  '减少X抽区间，加快查找速度。
                     Xarea2 = x + 10
                     X2 = Xtmp        '前几次得到的边距相同，最后一个因图片模糊，导致数值突变
@@ -161,7 +161,7 @@ Sub worker() '图片处理工人
     n = 0
     While (X1 = 0 And n <= 2)
         Yarea1 = 203    '页面显示上半端时，文件最上端在屏幕上的Y抽位置200 + 3
-        Yarea2 = 700    '页面显示上半端时，文件最下端在屏幕上的Y抽位置746 - 18，估算坚线的高度区间小于728
+        Yarea2 = 746    '页面显示上半端时，文件最下端在屏幕上的Y抽位置748
         Xtmp = 0
         X1 = 0
         While Int(Yarea1) < Int(Yarea2 - 0.5)
@@ -171,7 +171,7 @@ Sub worker() '图片处理工人
                 lngCor = GetPixel(lDC, x, Mnub)
                 R = lngCor Mod 256
                 If R < 200 Then
-                    If ((x - Xtmp) > 2 and Xtmp > 0 and (Yarea2- Yarea1) < 100) Then x = Xtmp
+                    If ((x - Xtmp) > 2 and Xtmp > 0) Then x = Xtmp
                     Xarea1 = x - 10
                     Xarea2 = x + 10
                     X1 = Xtmp
