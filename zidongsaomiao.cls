@@ -189,7 +189,7 @@ Sub worker() '图片处理工人
         Wend
         X1 = X1
         Y1 = CInt(Yarea2 + 0.5) - 200   '边框最顶端到文件最顶端的距离,文件最顶端在屏幕上的位置是200
-        Yn = Int(Yarea2) + 50           '边框最顶端向下50px,以此位置取最左到最最右位置，判断缩放与移动
+        Yn = Int(Yarea2) + 100          '边框最顶端向下100px,以此位置取最左到最最右位置，判断缩放与移动
         n = n + 1
     Wend
     
@@ -213,11 +213,10 @@ Sub worker() '图片处理工人
         dushu = Atn((X2 - X1) / (1122 - Y2 - Y1)) * 180 / 3.1415926 '文件总高度1122px 已经直角三角形的两垂直边的长度，求角度公式  角度*180/pi
     End If
     If (X1 > 0 And X2 > 0 And R1 > 0) Then
-        bili = 665 / (R1 - (X1 + X2) / 2)  '文件左右边框要求的宽度为665px(210-23-10=177*3.7587)
+        bili = 668 / (R1 - (X1 + X2) / 2)  '文件左右边框要求的宽度为668px(210-23-10=177*3.774)
     End If
     If (X1 > 0 And X2 > 0) Then
-        juli = 331 - (X1 + X2) / 2      '文件左边框要求的位置为331px
-        'juli = 331.45 - (640 - (X1 + X2) / 2) * bili 'WORD VBA坐标有点怪啊,修正不了
+        juli = 332 - (X1 + X2) / 2      '文件左边框要求的位置为331px
     End If
     If (bili <> 1 Or dushu <> 0 Or juli <> 0) Then
         With ActiveDocument.Shapes(1)
@@ -237,7 +236,7 @@ Sub worker() '图片处理工人
                 Exit For
             End If
         Next
-        juli = 331 - X1                      '得到移动距离
+        juli = 332 - X1                      '得到移动距离
         ActiveDocument.Shapes(1).Left = juli '实施移动操作
         Events 1.5                           '1.5秒之后进行保存操作
     End If
@@ -269,8 +268,6 @@ Sub get_point() '辅助功能
     Call GetCursorPos(pLocation)
     lColour = GetPixel(lDC, pLocation.x, pLocation.Y)   '需要的坐标值在这里。
     '    '(746-185)*2=561*2= 1122 /297=3.777777
-    '    '245 331 250 1000 1040  1040-245=795/210=3.7857  210-23-10=177*3.7587=665
-    '    '23*3.7587=86.4501+245=331.45
     'm = pLocation.x
     'n = pLocation.y
     'kuandu = PointsToMillimeters(pLocation.x)
