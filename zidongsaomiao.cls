@@ -131,6 +131,7 @@ Sub worker() '图片处理工人
             For x = Xarea1 To Xarea2   '水平X抽方向直接从左向逐点查找边框所在位置
                 lngCor = GetPixel(lDC, x, Mnub)
                 R = lngCor Mod 256
+                If ((x - Xtmp) > 2 and Xtmp > 0 and (Yarea2- Yarea1) < 100) Then x = Xtmp
                 If R < 200 Then
                     Xarea1 = x - 10  '减少X抽区间，加快查找速度。
                     Xarea2 = x + 10
@@ -169,6 +170,7 @@ Sub worker() '图片处理工人
             For x = Xarea1 To Xarea2
                 lngCor = GetPixel(lDC, x, Mnub)
                 R = lngCor Mod 256
+                If ((x - Xtmp) > 2 and Xtmp > 0 and (Yarea2- Yarea1) < 100) Then x = Xtmp
                 If R < 200 Then
                     Xarea1 = x - 10
                     Xarea2 = x + 10
