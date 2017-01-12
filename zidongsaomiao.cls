@@ -35,6 +35,14 @@ Private Type POINT
     Y As Long
 End Type
 
+Private Sub SingleClick() '防止屏幕黑屏，模拟鼠标单击
+  Dim pLocation As POINT
+  Call GetCursorPos(pLocation)
+  SetCursorPos pLocation.x, pLocation.Y 'x and y position
+  mouse_event MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0
+  mouse_event MOUSEEVENTF_LEFTUP, 0, 0, 0, 0
+End Sub
+                        
 Sub get_point() '辅助功能
     '此功能用于查找各个位置在屏幕的值，得天值之后配置到上面各个相应位置。
     Dim pLocation As POINT
