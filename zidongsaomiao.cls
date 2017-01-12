@@ -35,6 +35,14 @@ Private Type POINT
     Y As Long
 End Type
 
+Sub Events(n As Double) '暂停n秒，期间可以进行其他操作,主要用于等待页面加载完成
+    Dim t As Double
+    t = Timer
+    While Timer < t + n
+        DoEvents
+    Wend
+End Sub
+
 Private Sub SingleClick() '防止屏幕黑屏，模拟鼠标单击
   Dim pLocation As POINT
   Call GetCursorPos(pLocation)
