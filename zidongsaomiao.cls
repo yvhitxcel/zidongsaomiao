@@ -35,6 +35,70 @@ Private Type POINT
     Y As Long
 End Type
 
+Sub begging()
+    Dim i As Integer
+    Dim strFilename As String   '图片规则为 "xxx_页面_xxx.jpg",当PDF文件另存为jpeg时可自动生成
+    Dim strFilenameSave As String
+    Dim im As shape, imm As InlineShape
+    Dim strMulu As String
+    Dim intStartPage As Integer '在此配置图片页码开始值
+    Dim intStoopPage As Integer '在此配置图片页码结束值
+    
+    intStartPage = 10
+    intStoopPage = 306
+    
+    strMulu = "D:\zidongsaomiao"  '工作目录，目录下有input output两个文件夹
+                                  ' input内为原始图片
+                                  'output为输出文件夹
+    For i = intStartPage To intStoopPage
+        strFilename = "C4LR土建工程第2卷_页面_"
+        If (i < 10) Then strFilename = strFilename & "00" & i
+        If (i > 9 And i < 100) Then strFilename = strFilename & "0" & i
+        If (i > 99) Then strFilename = strFilename & i
+        strFilename = strFilename & ".jpg"          '初始文件名
+        strFilenameSave = strFilename & ".pdf"      '处理完成后另存为PDF格式
+        
+        '打开需要处理的文件  '暂停时间需要长达3秒
+        'Selection.InlineShapes.AddPicture FileName:= _
+            strMulu & "\input\" & strFilename _
+            , LinkToFile:=False, SaveWithDocument:=True
+        'For Each imm In ActiveDocument.InlineShapes
+        '    Events 1
+        '    imm.ConvertToShape '图片插入时为嵌入型，修改成浮于文件上方，这样才移动旋转。
+        '    Events 2
+        'Next
+        
+        '以shapes方式直接加载图片，可节约图片转换所花时间
+        Selection.InlineShapes.AddPicture FileName:= _
+            strMulu & "\297-1.png" _
+            , LinkToFile:=False, SaveWithDocument:=True  '打开一个297mm*1mm规格空白png图片，促使页面停靠在窗口底端
+        Events 0.1    '暂停0.1秒，等待文件停靠到窗口最底端
+       
+        ActiveDocument.Shapes.AddPicture FileName:= _
+            strMulu & "\input\" & strFilename _
+            , LinkToFile:=False, SaveWithDocument:=True
+        Events 1      '暂停1秒，等待图片加载完成
+        worker        '进入加工流程
+
+        '另存为PDF文件
+        ActiveDocument.ExportAsFixedFormat OutputFileName:= _
+            strMulu & "\output\" & strFilenameSave, ExportFormat:= _
+            wdExportFormatPDF, OpenAfterExport:=False, OptimizeFor:= _
+            wdExportOptimizeForPrint, Range:=wdExportAllDocument, From:=1, To:=1, _
+            Item:=wdExportDocumentContent, IncludeDocProps:=False, KeepIRM:=False, _
+            CreateBookmarks:=wdExportCreateHeadingBookmarks, DocStructureTags:=True, _
+            BitmapMissingFonts:=False, UseISO19005_1:=False
+        For Each im In ActiveDocument.Shapes
+            im.Delete   '删除所有图片
+        Next
+        For Each imm In ActiveDocument.InlineShapes
+            imm.Delete  '删除所有图片
+        Next
+        SingleClick  '防止进入屏保
+    Next
+    
+End Sub
+
 Sub Events(n As Double) '暂停n秒，期间可以进行其他操作,主要用于等待页面加载完成
     Dim t As Double
     t = Timer
