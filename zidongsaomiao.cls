@@ -99,6 +99,148 @@ Sub begging()
     
 End Sub
 
+Sub worker() '图片处理工人
+    Dim Xtmp As Integer, boolX As Integer
+    Dim j As Integer
+    Dim x, R, Yarea1, Yarea2, Xarea1, Xarea2
+    Dim lDC As Variant
+    Dim Mnub As Double, dushu As Double
+    Dim bili As Double, juli As Double
+    Dim X2 As Integer, X1 As Integer
+    Dim Y2 As Integer, Y1 As Integer, Yn As Integer
+    Dim R1 As Integer
+    Dim lngCor As Long
+    Dim n As Integer       '偶尔会有因延时不够导致取不到边框的情况，重复三次
+        
+
+
+    lDC = GetWindowDC(0)
+    '页面默认显示下半端
+    n = 0
+    While (X2 = 0 And n <= 2)
+        Yarea1 = 190    '页面显示下半端时，文件最上端在屏幕上的Y抽位置185 + 5
+        Yarea2 = 728    '页面显示下半端时，文件最下端在屏幕上的Y抽位置730 - 2，估算坚线的高度区间小于728
+        Xarea1 = 250    '页面显示下半端时，文件最左端在屏幕上的X抽位置245 + 5
+        Xarea2 = 400    '页面显示下半端时，文件最左端在屏幕上的X抽位置400，估算坚线的水平位置区间小于400
+        Xtmp = 0
+        X2 = 0
+        
+        While CInt(Yarea1 + 0.5) < Int(Yarea2) '垂直方向使用二分法加速查找边框端点所在位置
+            Mnub = (Yarea1 + Yarea2) / 2
+            boolX = 0
+            For x = Xarea1 To Xarea2   '水平X抽方向直接从左向逐点查找边框所在位置
+                lngCor = GetPixel(lDC, x, Mnub)
+                R = lngCor Mod 256
+                If R < 200 Then
+                    Xarea1 = x - 10  '减少X抽区间，加快查找速度。
+                    Xarea2 = x + 10
+                    X2 = Xtmp        '前几次得到的边距相同，最后一个因图片模糊，导致数值突变
+                    Xtmp = x         '因此增加了对上一次结果的缓存，不采用最后一次结果。
+                    If (X2 = 0) Then X2 = Xtmp
+                    boolX = x
+                    Exit For
+                End If
+            Next x
+            If boolX > 0 Then
+                Yarea1 = Mnub       '此处，当文件显示下半端或显示上半端时 不同
+            Else
+                Yarea2 = Mnub
+            End If
+        Wend
+        X2 = X2
+        Y2 = 731 - Int(Yarea1)  '页面显示下半端时，边框最底端到文件最底端的距离,文件最低端在屏幕上的Y抽位置731
+        n = n + 1
+        If (X2 = 0) Then Events 1
+    Wend
+    
+    '通过下面命令可使页面显示上半端
+    Application.ActiveWindow.Selection.GoTo wdGoToPage, wdGoToNext, , 1
+    Events 2
+    
+    n = 0
+    While (X1 = 0 And n <= 2)
+        Yarea1 = 203    '页面显示上半端时，文件最上端在屏幕上的Y抽位置200 + 3
+        Yarea2 = 700    '页面显示上半端时，文件最下端在屏幕上的Y抽位置746 - 18，估算坚线的高度区间小于728
+        Xtmp = 0
+        X1 = 0
+        While Int(Yarea1) < Int(Yarea2 - 0.5)
+            Mnub = Int((Yarea1 + Yarea2) / 2)
+            boolX = 0
+            For x = Xarea1 To Xarea2
+                lngCor = GetPixel(lDC, x, Mnub)
+                R = lngCor Mod 256
+                If R < 200 Then
+                    Xarea1 = x - 10
+                    Xarea2 = x + 10
+                    X1 = Xtmp
+                    Xtmp = x
+                    If (X1 = 0) Then X1 = Xtmp
+                    boolX = x
+                    Exit For
+                End If
+            Next x
+            If boolX > 0 Then
+                Yarea2 = Mnub
+            Else
+                Yarea1 = Mnub
+            End If
+        Wend
+        X1 = X1
+        Y1 = CInt(Yarea2 + 0.5) - 200   '边框最顶端到文件最顶端的距离,文件最顶端在屏幕上的位置是200
+        Yn = Int(Yarea2) + 50           '边框最顶端向下50px,以此位置取最左到最最右位置，判断缩放与移动
+        n = n + 1
+    Wend
+    
+    n = 0
+    While (R1 = 0 And n <= 2)
+        For j = 1038 To 800 Step -1     '从右向左查找右边框位置
+            lngCor = GetPixel(lDC, j, Yn)
+            R = lngCor Mod 256
+            If R < 200 Then
+                R1 = j                  '得到右边框水平位置
+                Exit For
+            End If
+        Next
+        n = n + 1
+    Wend
+    
+    bili = 1
+    dushu = 0
+    juli = 0
+    If (X1 > 0 And X2 > 0 And Y1 > 0 And Y2 > 0) Then
+        dushu = Atn((X2 - X1) / (1122 - Y2 - Y1)) * 180 / 3.1415926 '文件总高度1122px 已经直角三角形的两垂直边的长度，求角度公式  角度*180/pi
+    End If
+    If (X1 > 0 And X2 > 0 And R1 > 0) Then
+        bili = 665 / (R1 - (X1 + X2) / 2)  '文件左右边框要求的宽度为665px(210-23-10=177*3.7587)
+    End If
+    If (X1 > 0 And X2 > 0) Then
+        juli = 331 - (X1 + X2) / 2      '文件左边框要求的位置为331px
+        'juli = 331.45 - (640 - (X1 + X2) / 2) * bili 'WORD VBA坐标有点怪啊,修正不了
+    End If
+    If (bili <> 1 Or dushu <> 0 Or juli <> 0) Then
+        With ActiveDocument.Shapes(1)
+            .IncrementRotation dushu        '正数X2>X1 顺时针转 向右
+            .ScaleHeight bili, True         '设置高度
+            .ScaleWidth bili, True          '设置宽度
+            '.Left = juli                    '设置左边距
+        End With
+        Events 2            '因为修正不了偏移值，所以只好在完成旋转，缩放之后
+                            '再次抓取左边框的距离，完成页面的移动。
+                            '需要多花2秒钟时间，待优化
+        For j = Xarea1 To Xarea2             '从左向右查找左边框位置
+            lngCor = GetPixel(lDC, j, Yn)
+            R = lngCor Mod 256
+            If R < 200 Then
+                X1 = j                       '得到左边框水平位置
+                Exit For
+            End If
+        Next
+        juli = 331 - X1                      '得到移动距离
+        ActiveDocument.Shapes(1).Left = juli '实施移动操作
+        Events 1.5                           '1.5秒之后进行保存操作
+    End If
+End Sub
+
 Sub Events(n As Double) '暂停n秒，期间可以进行其他操作,主要用于等待页面加载完成
     Dim t As Double
     t = Timer
