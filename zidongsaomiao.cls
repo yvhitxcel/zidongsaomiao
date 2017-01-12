@@ -1,21 +1,21 @@
 Option Explicit
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'°æ±¾£º1.0.0
-'×÷Õß£ºÌÆº£ÓÂ
-' Q Q£º2338953
-'ÓÊÏä£ºyvhitxcel@tom.com
-'Î¢ÐÅ£º2338953
-'ÍøÖ·£ºhttp://github.com/yvhitxcel/zidongsaomiao
-'Ð­Òé£ºGNU GENERAL PUBLIC LICENSE Version 3.0
+'ç‰ˆæœ¬ï¼š1.0.0
+'ä½œè€…ï¼šå”æµ·å‹‡
+' Q Qï¼š2338953
+'é‚®ç®±ï¼šyvhitxcel@tom.com
+'å¾®ä¿¡ï¼š2338953
+'ç½‘å€ï¼šhttp://github.com/yvhitxcel/zidongsaomiao
+'åè®®ï¼šGNU GENERAL PUBLIC LICENSE Version 3.0
 '
-'ËµÃ÷£º¿ª·¢Ô´×ÔÓÚÊµ¼Ê¹¤×÷£¬ÏîÄ¿ÐèÒª´¦Àí´óÁ¿PDFÎÄ¼þ£¬ÎÄ¼þÓÉÉ¨ÃèÒÇÅúÁ¿É¨ÃèÉú³É£¬ _
-'       ÓÉÓÚÔ­Ê¼ÎÄ¼þÀ´Ô´·Ç³£¹ã·º£¬¸÷ÖÖ¿í¶ÈÔÓ£¬ÁíÍâÉ¨ÃèÒÇÉ¨ÃèÊ±Ò²µ¼ÖÂÎÄ¼þµÄÆ«Ð±£¬ _
-'       µ¼ÖÂÄ¿Ç°µÄ¹¤×÷½ø¶È»ºÂý£¬´ËÇ°Ò»Ö±ÓÉÈË¹¤µÄ°ì·¨£¬¶ÔÎÄ¼þ½øÐÐÖðÒ³ÐÞ¸Ä£¬ÈË¾ù _
-'       Ã¿Ìì´¦ÀíÁ¿Ô¼Îª150Ò³£¬ÏîÄ¿½ØÖ¹µ½Ä¿Ç°´óÔ¼»¹ÓÐ½ü50ÍòÒ³ÎÄ¼þ´ý´¦Àí£¬ÈÎÎñ·Ç³£¼è¾Þ¡£
-'Ë¼Â·£ºÏÈ°ÑpdfÎÄ¼þÁí´æÎªjpegÎÄ¼þ¸ñÊ½£¬È»ºóÀûÓÃwordºêÓïÑÔ£¬¶¯Ì¬¼ÓÔØÍ¼Æ¬µ½WORDÎÄµµ _
-'       ¾­¹ýÆÁÄ»È¡É«º¯ÊýÅÐ¶ÏÎÄ¼þ±ß¿òËùÔÚÎ»ÖÃ£¬½ø¶øÒÀ¾Ý´ËÊý¾Ý½øÐÐ£¬Ëõ·Å£¬Ðý×ª£¬Æ½ _
-'       ÒÆ²Ù×÷,´ïµ½Ó¡Ë¢¹¤Òµ±ê×¼ÐèÇó¡£
+'è¯´æ˜Žï¼šå¼€å‘æºè‡ªäºŽå®žé™…å·¥ä½œï¼Œé¡¹ç›®éœ€è¦å¤„ç†å¤§é‡PDFæ–‡ä»¶ï¼Œæ–‡ä»¶ç”±æ‰«æä»ªæ‰¹é‡æ‰«æç”Ÿæˆï¼Œ _
+'       ç”±äºŽåŽŸå§‹æ–‡ä»¶æ¥æºéžå¸¸å¹¿æ³›ï¼Œå„ç§å®½åº¦æ‚ï¼Œå¦å¤–æ‰«æä»ªæ‰«ææ—¶ä¹Ÿå¯¼è‡´æ–‡ä»¶çš„åæ–œï¼Œ _
+'       å¯¼è‡´ç›®å‰çš„å·¥ä½œè¿›åº¦ç¼“æ…¢ï¼Œæ­¤å‰ä¸€ç›´ç”±äººå·¥çš„åŠžæ³•ï¼Œå¯¹æ–‡ä»¶è¿›è¡Œé€é¡µä¿®æ”¹ï¼Œäººå‡ _
+'       æ¯å¤©å¤„ç†é‡çº¦ä¸º150é¡µï¼Œé¡¹ç›®æˆªæ­¢åˆ°ç›®å‰å¤§çº¦è¿˜æœ‰è¿‘50ä¸‡é¡µæ–‡ä»¶å¾…å¤„ç†ï¼Œä»»åŠ¡éžå¸¸è‰°å·¨ã€‚
+'æ€è·¯ï¼šå…ˆæŠŠpdfæ–‡ä»¶å¦å­˜ä¸ºjpegæ–‡ä»¶æ ¼å¼ï¼Œç„¶åŽåˆ©ç”¨wordå®è¯­è¨€ï¼ŒåŠ¨æ€åŠ è½½å›¾ç‰‡åˆ°WORDæ–‡æ¡£ _
+'       ç»è¿‡å±å¹•å–è‰²å‡½æ•°åˆ¤æ–­æ–‡ä»¶è¾¹æ¡†æ‰€åœ¨ä½ç½®ï¼Œè¿›è€Œä¾æ®æ­¤æ•°æ®è¿›è¡Œï¼Œç¼©æ”¾ï¼Œæ—‹è½¬ï¼Œå¹³ _
+'       ç§»æ“ä½œ,è¾¾åˆ°å°åˆ·å·¥ä¸šæ ‡å‡†éœ€æ±‚ã€‚
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 Private Declare Function GetPixel Lib "gdi32" (ByVal hdc As Long, ByVal x As Long, ByVal Y As Long) As Long
@@ -35,9 +35,31 @@ Private Type POINT
     Y As Long
 End Type
 
+Sub get_point() 'è¾…åŠ©åŠŸèƒ½
+    'æ­¤åŠŸèƒ½ç”¨äºŽæŸ¥æ‰¾å„ä¸ªä½ç½®åœ¨å±å¹•çš„å€¼ï¼Œå¾—å¤©å€¼ä¹‹åŽé…ç½®åˆ°ä¸Šé¢å„ä¸ªç›¸åº”ä½ç½®ã€‚
+    Dim pLocation As POINT
+    Dim lColour As Long
+    Dim lDC As Variant, R, G, B
+    'Application.ActiveWindow.Selection.GoTo wdGoToPage, wdGoToNext, , 1
+    lDC = GetWindowDC(0)
+    Call GetCursorPos(pLocation)
+    lColour = GetPixel(lDC, pLocation.x, pLocation.Y)   'éœ€è¦çš„åæ ‡å€¼åœ¨è¿™é‡Œã€‚
+    '    '(746-185)*2=561*2= 1122 /297=3.777777
+    '    '245 331 250 1000 1040  1040-245=795/210=3.7857  210-23-10=177*3.7587=665
+    '    '23*3.7587=86.4501+245=331.45
+    'm = pLocation.x
+    'n = pLocation.y
+    'kuandu = PointsToMillimeters(pLocation.x)
+    '    '86.43 366.8889
+    '    'ActiveDocument.InlineShapes(n).Height = MillimetersToPoints(297)
+    '    'aaa = PointsToMillimeters(ActiveDocument.InlineShapes(n).Width)
+    R = lColour Mod 256
+    G = ((lColour And &HFF00&) \ 256&) Mod 256&
+    B = (lColour And &HFF0000) \ 65536
+End Sub
 
-Sub turn_OLD() 'Ã»ÓÃÁË£¬Ò²ËãÊÇÒ»¸öË¼Â·°É£¬Áô×Å
-    'ÊÇ¸ö±¿°ì·¨£¬²»Ëã½Ç¶È£¬ÅÐ¶ÏÎÄ¼þÓÐÆ«¾Í×ªÒ»¶¨µÄ½Ç¶È£¬Ö±µ½ÎÄ¼þ¶ËÕý¡£
+Sub turn_OLD() 'æ²¡ç”¨äº†ï¼Œä¹Ÿç®—æ˜¯ä¸€ä¸ªæ€è·¯å§ï¼Œç•™ç€
+    'æ˜¯ä¸ªç¬¨åŠžæ³•ï¼Œä¸ç®—è§’åº¦ï¼Œåˆ¤æ–­æ–‡ä»¶æœ‰åå°±è½¬ä¸€å®šçš„è§’åº¦ï¼Œç›´åˆ°æ–‡ä»¶ç«¯æ­£ã€‚
     Dim lDC As Variant
     Dim j As Integer, R As Integer
     Dim lngCor As Long
@@ -61,12 +83,12 @@ Sub turn_OLD() 'Ã»ÓÃÁË£¬Ò²ËãÊÇÒ»¸öË¼Â·°É£¬Áô×Å
         End If
     Next
     If (L2 > L1 And L2 > 0 And L1 > 0 And L2 < 400 And L1 < 400) Then
-        ActiveDocument.Shapes(1).IncrementRotation 0.1 'Ïò×ó
+        ActiveDocument.Shapes(1).IncrementRotation 0.1 'å‘å·¦
         s2
         turn_OLD
     End If
     If (L2 < L1 And L2 > 0 And L1 > 0 And L2 < 400 And L1 < 400) Then
-        ActiveDocument.Shapes(1).IncrementRotation -0.05 'ÏòÓÒ
+        ActiveDocument.Shapes(1).IncrementRotation -0.05 'å‘å³
         s2
         turn_OLD
     End If
