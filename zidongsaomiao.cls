@@ -39,6 +39,7 @@ Dim worknum As Integer
 Sub begging()
     Dim i As Integer
     Dim strFilename As String   '图片规则为 "xxx_页面_xxx.jpg",当PDF文件另存为jpeg时可自动生成
+    Dim FileName As String      '文件名前缀 "xxx_页面_"
     Dim strFilenameSave As String
     Dim im As shape, imm As InlineShape
     Dim strMulu As String
@@ -47,12 +48,13 @@ Sub begging()
     
     intStartPage = 10
     intStoopPage = 306
+    FileName = "03 厂区给排水系统第三卷VOL.3_页面_"
     
     strMulu = "D:\zidongsaomiao"  '工作目录，目录下有input output两个文件夹
                                   ' input内为原始图片
                                   'output为输出文件夹
     For i = intStartPage To intStoopPage
-        strFilename = "C4LR土建工程第2卷_页面_"
+        strFilename = FileName
         If (i < 10) Then strFilename = strFilename & "00" & i
         If (i > 9 And i < 100) Then strFilename = strFilename & "0" & i
         If (i > 99) Then strFilename = strFilename & i
@@ -73,12 +75,14 @@ Sub begging()
         Selection.InlineShapes.AddPicture FileName:= _
             strMulu & "\297-1.png" _
             , LinkToFile:=False, SaveWithDocument:=True  '打开一个297mm*1mm规格空白png图片，促使页面停靠在窗口底端
-        Events 0.1    '暂停0.1秒，等待文件停靠到窗口最底端
+        Events 0.3    '等待文件停靠到窗口最底端
        
         ActiveDocument.Shapes.AddPicture FileName:= _
             strMulu & "\input\" & strFilename _
             , LinkToFile:=False, SaveWithDocument:=True
-        Events 1      '暂停1秒，等待图片加载完成
+        Events 1      '等待图片加载完成
+
+        worknum = 0   '重复运行worker，不需要暂停
         worker        '进入加工流程
         worker
         worker
@@ -204,7 +208,7 @@ Sub worker() '图片处理工人
     
     bili = 1
     dushu = 0
-    If (X1 <> X2 And X1 > 0 And X2 > 0 And Y1 > 0 And Y2 > 0) Then
+    If (X1 > 0 And X2 > 0 And Y1 > 0 And Y2 > 0) Then
         dushu = Atn((X2 - X1) / (1122 - Y2 - Y1)) * 180 / 3.1415926 '文件总高度1122px 已经直角三角形的两垂直边的长度，求角度公式  角度*180/pi
 
         For j = 1038 To 800 Step -1          '从右向左查找右边框位置
@@ -229,6 +233,7 @@ Sub worker() '图片处理工人
             End If
         End With
         If (worknum = 0) Then Events 1                              'n秒后进行保存操作
+        worknum = worknum + 1
     End If
 End Sub
 
