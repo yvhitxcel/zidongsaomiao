@@ -1,7 +1,7 @@
 Option Explicit
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'版本：1.0.1
+'版本：1.0.2
 '作者：唐海勇
 ' Q Q：2338953
 '邮箱：yvhitxcel@tom.com
@@ -34,7 +34,8 @@ Private Type POINT
     x As Long
     Y As Long
 End Type
-
+Dim worknum As Integer
+                        
 Sub begging()
     Dim i As Integer
     Dim strFilename As String   '图片规则为 "xxx_页面_xxx.jpg",当PDF文件另存为jpeg时可自动生成
@@ -79,6 +80,8 @@ Sub begging()
             , LinkToFile:=False, SaveWithDocument:=True
         Events 1      '暂停1秒，等待图片加载完成
         worker        '进入加工流程
+        worker
+        worker
 
         '另存为PDF文件
         ActiveDocument.ExportAsFixedFormat OutputFileName:= _
@@ -130,11 +133,14 @@ Sub worker() '图片处理工人
                 lngCor = GetPixel(lDC, x, Mnub)
                 R = lngCor Mod 256
                 If R < 200 Then
-                    If ((x - Xtmp) > 2 And Xtmp > 0) Then x = Xtmp
-                    Xarea1 = x - 10  '减少X抽区间，加快查找速度。
-                    Xarea2 = x + 10
                     X2 = Xtmp        '前几次得到的边距相同，最后一个因图片模糊，导致数值突变
-                    Xtmp = x         '因此增加了对上一次结果的缓存，不采用最后一次结果。
+                    If (Xtmp > x + 1) Then
+                        Mnub = Int(Yarea1) + 1
+                    Else
+                        Xarea1 = x - 10  '减少X抽区间，加快查找速度。
+                        Xarea2 = x + 10
+                        Xtmp = x         '因此增加了对上一次结果的缓存，不采用最后一次结果。
+                    End If
                     If (X2 = 0) Then X2 = Xtmp
                     boolX = x
                     Exit For
@@ -153,13 +159,15 @@ Sub worker() '图片处理工人
     Wend
     
     '通过下面命令可使页面显示上半端
-    Application.ActiveWindow.Selection.GoTo wdGoToPage, wdGoToNext, , 1
-    Events 2
+    If (worknum = 0) Then
+        Application.ActiveWindow.Selection.GoTo wdGoToPage, wdGoToNext, , 1
+        Events 1
+    End If
     
     n = 0
     While (X1 = 0 And n <= 2)
         Yarea1 = 203    '页面显示上半端时，文件最上端在屏幕上的Y抽位置200 + 3
-        Yarea2 = 746    '页面显示上半端时，文件最下端在屏幕上的Y抽位置748
+        Yarea2 = 746 * 2 - 203 '页面显示上半端时，文件最下端在屏幕上的Y抽位置748
         Xtmp = 0
         X1 = 0
         While Int(Yarea1) < Int(Yarea2 - 0.5)
@@ -169,13 +177,16 @@ Sub worker() '图片处理工人
                 lngCor = GetPixel(lDC, x, Mnub)
                 R = lngCor Mod 256
                 If R < 200 Then
-                    If ((x - Xtmp) > 2 And Xtmp > 0) Then x = Xtmp
-                    Xarea1 = x - 10
-                    Xarea2 = x + 10
                     X1 = Xtmp
-                    Xtmp = x
-                    If (X1 = 0) Then X1 = Xtmp
+                    If (Xtmp < x And Xtmp > 0) Then
+                        Mnub = Int(Yarea2) - 1
+                    Else
+                        Xarea1 = x - 10
+                        Xarea2 = x + 10
+                        Xtmp = x
+                    End If
                     boolX = x
+                    If (X1 = 0) Then X1 = Xtmp
                     Exit For
                 End If
             Next x
@@ -195,33 +206,29 @@ Sub worker() '图片处理工人
     dushu = 0
     If (X1 <> X2 And X1 > 0 And X2 > 0 And Y1 > 0 And Y2 > 0) Then
         dushu = Atn((X2 - X1) / (1122 - Y2 - Y1)) * 180 / 3.1415926 '文件总高度1122px 已经直角三角形的两垂直边的长度，求角度公式  角度*180/pi
-        ActiveDocument.Shapes(1).IncrementRotation dushu            '正数X2>X1 顺时针转 向右
-        Events 2.5
-    End If
-    For j = Xarea1 To Xarea2             '从左向右查找左边框位置
-        lngCor = GetPixel(lDC, j, Yn)
-        R = lngCor Mod 256
-        If R < 200 Then
-            L1 = j                       '得到左边框水平位置
-            Exit For
-        End If
-    Next
-    For j = 1038 To 800 Step -1          '从右向左查找右边框位置
-        lngCor = GetPixel(lDC, j, Yn)
-        R = lngCor Mod 256
-        If R < 200 Then
-            R1 = j                       '得到右边框水平位置
-            Exit For
-        End If
-    Next
-    If (L1 > 0 And R1 > 0) Then
-        bili = 664.5 / (R1 - L1)         '文件左右边框要求的宽度为664.5px(210-23-11=176*3.774)
+
+        For j = 1038 To 800 Step -1          '从右向左查找右边框位置
+            lngCor = GetPixel(lDC, j, Yn)
+            R = lngCor Mod 256
+            If R < 200 Then
+                R1 = j                       '得到右边框水平位置
+                Exit For
+            End If
+        Next
+
+        bili = 664.5 / (R1 - X1)                                    '文件左右边框要求的宽度为664.5px(210-23-11=176*3.774)
+        If (Abs(bili) > 1.1 Or Abs(bili) < 0.9) Then bili = 1
         With ActiveDocument.Shapes(1)
-            .Left = 328 - L1             '实施移动操作 左边框要求的位置为328px (23-1)*3.774+245 word与PDF有偏差
-            .ScaleHeight bili, True      '设置高度
-            .ScaleWidth bili, True       '设置宽度
+            If (dushu <> 0 And Abs(dushu) < 5) Then
+                .IncrementRotation dushu                            '正数X2>X1 顺时针转 向右
+            End If
+            .Left = (330 - (((X1 + X2) / 2) - .Left)) * bili        '实施移动操作 左边框要求的位置为330px (23-1)*3.774+245 word与PDF有偏差
+            If (bili <> 1) Then
+                .ScaleWidth bili, False                             '设置高度
+                .ScaleHeight bili, False                            '设置宽度
+            End If
         End With
-        Events 2                         '2秒之后进行保存操作
+        If (worknum = 0) Then Events 1                              'n秒后进行保存操作
     End If
 End Sub
 
