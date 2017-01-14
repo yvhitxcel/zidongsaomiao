@@ -136,7 +136,7 @@ Sub worker() '图片处理工人
             For x = Xarea1 To Xarea2   '水平X抽方向直接从左向逐点查找边框所在位置
                 lngCor = GetPixel(lDC, x, Mnub)
                 R = lngCor Mod 256
-                If R < 200 Then
+                If R < 190 Then
                     X2 = Xtmp        '前几次得到的边距相同，最后一个因图片模糊，导致数值突变
                     If (Xtmp > x + 1) Then
                         Mnub = Int(Yarea1) + 1
@@ -180,7 +180,7 @@ Sub worker() '图片处理工人
             For x = Xarea1 To Xarea2
                 lngCor = GetPixel(lDC, x, Mnub)
                 R = lngCor Mod 256
-                If R < 200 Then
+                If R < 190 Then
                     X1 = Xtmp
                     If (Xtmp < x And Xtmp > 0) Then
                         Mnub = Int(Yarea2) - 1
@@ -214,7 +214,7 @@ Sub worker() '图片处理工人
         For j = 1038 To 800 Step -1          '从右向左查找右边框位置
             lngCor = GetPixel(lDC, j, Yn)
             R = lngCor Mod 256
-            If R < 200 Then
+            If R < 190 Then
                 R1 = j                       '得到右边框水平位置
                 Exit For
             End If
