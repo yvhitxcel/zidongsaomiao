@@ -1,7 +1,7 @@
 Option Explicit
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'版本：1.0.2
+'版本：1.0.3
 '作者：唐海勇
 ' Q Q：2338953
 '邮箱：yvhitxcel@tom.com
@@ -58,9 +58,9 @@ Sub begging()
         If (i < 10) Then strFilename = strFilename & "00" & i
         If (i > 9 And i < 100) Then strFilename = strFilename & "0" & i
         If (i > 99) Then strFilename = strFilename & i
-        strFilename = strFilename & ".jpg"          '初始文件名
         strFilenameSave = strFilename & ".pdf"      '处理完成后另存为PDF格式
-        
+        strFilename = strFilename & ".jpg"          '初始文件名
+
         '打开需要处理的文件  '暂停时间需要长达3秒
         'Selection.InlineShapes.AddPicture FileName:= _
             strMulu & "\input\" & strFilename _
@@ -109,7 +109,8 @@ End Sub
 Sub worker() '图片处理工人
     Dim Xtmp As Integer, boolX As Integer
     Dim j As Integer
-    Dim x, R, Yarea1, Yarea2, Xarea1, Xarea2
+    Dim H as Long 
+    Dim x, Yarea1, Yarea2, Xarea1, Xarea2
     Dim lDC As Variant
     Dim Mnub As Double, dushu As Double
     Dim bili As Double
@@ -135,8 +136,8 @@ Sub worker() '图片处理工人
             boolX = 0
             For x = Xarea1 To Xarea2   '水平X抽方向直接从左向逐点查找边框所在位置
                 lngCor = GetPixel(lDC, x, Mnub)
-                R = lngCor Mod 256
-                If R < 190 Then
+                RGBtoH lngCor, H
+                If H < 190 Then
                     X2 = Xtmp        '前几次得到的边距相同，最后一个因图片模糊，导致数值突变
                     If (Xtmp > x + 1) Then
                         Mnub = Int(Yarea1) + 1
@@ -179,8 +180,8 @@ Sub worker() '图片处理工人
             boolX = 0
             For x = Xarea1 To Xarea2
                 lngCor = GetPixel(lDC, x, Mnub)
-                R = lngCor Mod 256
-                If R < 190 Then
+                RGBtoH lngCor, H
+                If H < 190 Then
                     X1 = Xtmp
                     If (Xtmp < x And Xtmp > 0) Then
                         Mnub = Int(Yarea2) - 1
@@ -202,7 +203,7 @@ Sub worker() '图片处理工人
         Wend
         X1 = X1
         Y1 = CInt(Yarea2 + 0.5) - 200   '边框最顶端到文件最顶端的距离,文件最顶端在屏幕上的位置是200
-        Yn = Int(Yarea2) + 100          '边框最顶端向下100px,以此位置取最左到最最右位置，判断缩放与移动
+        If (Yarea2 < 560) Then Yn = 660 Else Yn = Int(Yarea2) + 100 '边框最顶端向下100px,以此位置取最左到最最右位置，判断缩放与移动
         n = n + 1
     Wend
     
@@ -213,20 +214,20 @@ Sub worker() '图片处理工人
 
         For j = 1038 To 800 Step -1          '从右向左查找右边框位置
             lngCor = GetPixel(lDC, j, Yn)
-            R = lngCor Mod 256
-            If R < 190 Then
+            RGBtoH lngCor, H
+            If H < 190 Then
                 R1 = j                       '得到右边框水平位置
                 Exit For
             End If
         Next
 
         bili = 664.5 / (R1 - X1)                                    '文件左右边框要求的宽度为664.5px(210-23-11=176*3.774)
-        If (Abs(bili) > 1.1 Or Abs(bili) < 0.9) Then bili = 1
+        If (Abs(bili) > 1.2 Or Abs(bili) < 0.8) Then bili = 1
         With ActiveDocument.Shapes(1)
-            If (dushu <> 0 And Abs(dushu) < 5) Then
+            If (dushu <> 0 And Abs(dushu) < 1 And worknum = 0) Then
                 .IncrementRotation dushu                            '正数X2>X1 顺时针转 向右
             End If
-            .Left = (330 - (((X1 + X2) / 2) - .Left)) * bili        '实施移动操作 左边框要求的位置为330px (23-1)*3.774+245 word与PDF有偏差
+            .Left = (332 - (((X1 + X2) / 2) - .Left)) * bili        '实施移动操作 左边框要求的位置为332px 23*3.774+245
             If (bili <> 1) Then
                 .ScaleWidth bili, False                             '设置高度
                 .ScaleHeight bili, False                            '设置宽度
@@ -252,7 +253,15 @@ Private Sub SingleClick() '防止屏幕黑屏，模拟鼠标单击
   mouse_event MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0
   mouse_event MOUSEEVENTF_LEFTUP, 0, 0, 0, 0
 End Sub
-                        
+
+Sub RGBtoH(lColour As Long, H As Long) 'RGB转换成灰度值
+    Dim R As Long, G As Long, B As Long
+    R = lColour Mod 256
+    G = ((lColour And &HFF00&) \ 256&) Mod 256&
+    B = (lColour And &HFF0000) \ 65536
+    H = (R * 77 + G * 150 + B * 29) \ 256 '三原色换成灰度值公式
+End Sub
+
 Sub get_point() '辅助功能
     '此功能用于查找各个位置在屏幕的值，得天值之后配置到上面各个相应位置。
     Dim pLocation As POINT
@@ -272,40 +281,4 @@ Sub get_point() '辅助功能
     R = lColour Mod 256
     G = ((lColour And &HFF00&) \ 256&) Mod 256&
     B = (lColour And &HFF0000) \ 65536
-End Sub
-
-Sub turn_OLD() '没用了，也算是一个思路吧，留着
-    '是个笨办法，不算角度，判断文件有偏就转一定的角度，直到文件端正。
-    Dim lDC As Variant
-    Dim j As Integer, R As Integer
-    Dim lngCor As Long
-    Dim L1 As Integer, L2 As Integer
-    
-    lDC = GetWindowDC(0)
-    For j = 250 To 400
-        lngCor = GetPixel(lDC, j, 560)
-        R = lngCor Mod 256
-        If R < 200 Then
-            L1 = j
-            Exit For
-        End If
-    Next
-    For j = 250 To 400
-        lngCor = GetPixel(lDC, j, 720)
-        R = lngCor Mod 256
-        If R < 200 Then
-            L2 = j
-            Exit For
-        End If
-    Next
-    If (L2 > L1 And L2 > 0 And L1 > 0 And L2 < 400 And L1 < 400) Then
-        ActiveDocument.Shapes(1).IncrementRotation 0.1 '向左
-        s2
-        turn_OLD
-    End If
-    If (L2 < L1 And L2 > 0 And L1 > 0 And L2 < 400 And L1 < 400) Then
-        ActiveDocument.Shapes(1).IncrementRotation -0.05 '向右
-        s2
-        turn_OLD
-    End If
 End Sub
