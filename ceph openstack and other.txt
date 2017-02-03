@@ -1,0 +1,1878 @@
+系统安装时用的用户就是ubuntu  --overwrite-conf
+
+1、修改/etc/hosts
+sudo vi /etc/hosts
+192.168.21.100  node0 #增加
+192.168.21.101  node1 #增加
+sudo useradd -d /home/ceph -s /bin/bash -mr ceph  #在节点上增加ceph帐号
+echo "ceph ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/ceph   #设置帐号有sudo权限。
+sudo chmod 0440 /etc/sudoers.d/ceph
+sudo adduser ceph sudo
+sudo passwd ceph        #设置ceph的密码
+
+2 配置新的源
+wget -q -O- 'https://download.ceph.com/keys/release.asc' | sudo apt-key add -
+echo deb https://download.ceph.com/debian-jewel/ $(lsb_release -sc) main | sudo tee /etc/apt/sources.list.d/ceph.list
+sudo apt-get update
+sudo apt-get upgrade
+#如果出错就换源sudo apt-get update --fix-missing 把里面的cn.之类的国家删除
+sudo ufw disable
+sudo apt-get install axel -y
+sudo apt-get install ntp -y
+sudo apt-get install openssh-server -y
+sudo apt-get install xfsprogs -y
+sudo ntpq -p
+ntpdate time.nist.gov
+hwclock --hctosys
+服务器 vi /etc/ntp.conf
+server 127.127.1.0
+fudge 127.127.1.0 stratum 8
+restrict 192.168.0.0 mask 255.255.0.0 nomodify
+
+net time /setsntp:"192.168.21.100"
+w32tm /resync
+
+客户机
+server 192.168.21.100
+#如果是节点机，磁盘准备好了，直接配置权限然后到第6步
+sudo chown -R ceph:ceph /ceph 
+
+3、准备硬盘
+sudo fdisk -l  #查看所有硬盘和分区情况  每一块硬盘的名为/dev/sda /dev/sdb /dev/sdc这样增长
+#下面给硬盘分区  进入后，m 帮助菜单 p查看分区 n新建，p空闲空间 d删除 W保存
+sudo fdisk /dev/sda
+n   p   w
+sudo fdisk /dev/sdb
+n   p   w
+sudo mkfs.xfs -f /dev/sda4
+sudo mkfs.xfs -f /dev/sdb1
+
+#sudo mount /dev/sda4 /ceph/osd0
+#sudo mount /dev/sdb1 /ceph/osd1
+#根据下面的命令把分区sda4和sdb1分别挂载到/ceph/osd0和/ceph/osd1目录下
+sudo blkid #读取uuid
+sudo vi /etc/fstab
+UUID=885a6c24-7206-4c70-8c02-cf1960453502     /ceph/osd0  xfs     defaults        0       0
+UUID=c9f86e3c-e230-4e35-abb5-e8b8e100070c     /ceph/osd1  xfs     defaults        0       0
+sudo mount -a
+#重启后用fd -l查看
+
+<<<<<<<<<<<<<<<
+#node1
+cd /
+sudo mkdir ceph
+sudo chown -R ceph:ceph /ceph
+cd ceph
+mkdir -p {osd0,osd1,osd2,mon0,mds0}
+cd ~
+sudo blkid #读取uuid
+/dev/sda6: UUID="6516e001-c7f3-4b7d-bd83-4b697b4c4780" TYPE="xfs"
+/dev/sdc1: UUID="20cd470d-2ec3-4339-9e6b-afa2fec1f263" TYPE="xfs"
+/dev/sdb1: UUID="4cd3091b-2985-40b4-9bd9-974d63cda0c1" TYPE="xfs"
+sudo vi /etc/fstab
+UUID=6516e001-c7f3-4b7d-bd83-4b697b4c4780     /ceph/osd0  xfs     defaults        0       0
+UUID=20cd470d-2ec3-4339-9e6b-afa2fec1f263     /ceph/osd1  xfs     defaults        0       0
+UUID=4cd3091b-2985-40b4-9bd9-974d63cda0c1     /ceph/osd2  xfs     defaults        0       0
+sudo mount -a
+#重启后用fd -l查看
+>>>>>>>>>>>>>>
+
+4、创建目录挂载ceph并进入
+cd /
+sudo mkdir ceph
+sudo chown -R ceph:ceph /ceph
+cd ceph
+mkdir -p {osd0,osd1,osd2,mon0,mds0}
+cd ~
+
+5、安装ceph-deploy
+sudo mkdir /ceph-cluster
+sudo chown -R ubuntu:ubuntu /ceph-cluster
+cd /ceph-cluster
+sudo apt-get install ceph-deploy -y
+
+6、设置无密码登陆ssh config
+ssh-keygen
+vi ~/.ssh/config 
+Host node0
+   Hostname node0
+   User ceph
+Host node1
+   Hostname node1
+   User ceph
+Host node2
+   Hostname node2
+   User ceph
+ssh-copy-id ceph@node0
+ssh-copy-id ceph@node1
+ssh-copy-id ceph@node2
+ssh-copy-id ceph@node10
+ssh-copy-id ceph@node11
+
+7、创建一个新集群
+ceph-deploy new --fsid 3e435784-ded0-488c-925d-1ddd917bdd5b node0 node1 node2
+
+6、给节点机安装Ceph基本库（ceph，ceph-common， ceph-fs-common, ceph-mds）
+ceph-deploy install --mon --osd node0 node1 node2 
+#总是有问题,到节点机运行sudo apt-get install ceph-mon  
+之后再运行上面的命令也正常了，需要再次运行
+ssh-copy-id ceph@node2
+
+7、创建一个集群监视器  --overwrite-conf 
+ceph-deploy mon create node0 node1 node2
+
+8、收集远程节点上的密钥到当前文件夹
+ceph-deploy gatherkeys node0 node1 node2 node10 node11
+
+9、复制 admin 密钥到其他节点
+ceph-deploy admin node0 node1 node2 node10 node11
+
+10、增加OSD，就在我们挂载虚拟磁盘的目录
+#ceph-deploy config push node1
+ceph-deploy osd prepare node0:/ceph/osd0
+ceph-deploy osd prepare node0:/ceph/osd1
+ceph-deploy osd prepare node1:/ceph/osd0
+ceph-deploy osd prepare node1:/ceph/osd1
+ceph-deploy osd prepare node1:/ceph/osd2
+ceph-deploy osd prepare node2:/ceph/osd0
+ceph-deploy osd prepare node2:/ceph/osd1
+ceph-deploy osd prepare node2:/ceph/osd2
+ceph-deploy osd prepare node10:/ceph/osd0
+ceph-deploy osd prepare node10:/ceph/osd2
+ceph-deploy osd prepare node11:/ceph/osd0
+
+11、激活OSD
+ceph-deploy osd activate node0:/ceph/osd0
+ceph-deploy osd activate node0:/ceph/osd1
+ceph-deploy osd activate node1:/ceph/osd0
+ceph-deploy osd activate node1:/ceph/osd1
+ceph-deploy osd activate node1:/ceph/osd2
+ceph-deploy osd activate node2:/ceph/osd0
+ceph-deploy osd activate node2:/ceph/osd1
+ceph-deploy osd activate node2:/ceph/osd2
+ceph-deploy osd activate node10:/ceph/osd0
+ceph-deploy osd activate node10:/ceph/osd2
+ceph-deploy osd activate node11:/ceph/osd0
+
+12、创建pool
+sudo ceph osd pool create volumes 128
+sudo ceph osd pool set volumes size 2
+sudo ceph osd pool set volumes min_size 1
+sudo ceph osd pool create images 128
+sudo ceph osd pool set images size 2
+sudo ceph osd pool set images min_size 1
+sudo ceph auth get-or-create client.volumes mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=volumes, allow rx pool=images'
+sudo ceph auth get-or-create client.images mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=images'
+sudo useradd glance
+sudo useradd cinder
+sudo ceph auth get-or-create client.images | sudo tee /etc/ceph/ceph.client.images.keyring
+sudo chown glance:glance /etc/ceph/ceph.client.images.keyring
+sudo ceph auth get-or-create client.volumes | sudo tee /etc/ceph/ceph.client.volumes.keyring
+sudo chown cinder:cinder /etc/ceph/ceph.client.volumes.keyring
+
+apt-get install python-ceph
+vi /etc/glance/glance-api.conf
+[glance_store]
+stores = rbd,file,http
+default_store = rbd
+rbd_store_chunk_size = 8
+rbd_store_pool = images
+rbd_store_user = images
+rbd_store_ceph_conf = /etc/ceph/ceph.conf
+
+
+12 一个mds  
+ceph-deploy --overwrite-conf mds create node0
+ceph-deploy rgw create node0
+
+ceph-deploy mds create node0
+ceph osd pool create metadata 128
+ceph osd pool create data 128
+ceph fs new cephfs metadata data
+
+ceph osd pool set metadata size 2
+ceph osd pool set metadata min_size 1
+ceph osd pool set data size 2
+ceph osd pool set data min_size 1
+
+cd /ceph-cluster/
+cat ceph.client.admin.keyring
+
+mkdir /mnt/cephfs
+mount -t ceph 192.168.21.100:6789,192.168.21.101:6789,192.168.21.102:6789:/ /mnt/cephfs -o name=admin,secret=AQCKPtxXTZWjARAAnTzK/GDifZxIv307Amj6lg==
+mount -t ceph 192.168.21.101:6789:/ /mnt/cephfs -o name=admin,secret=AQCKPtxXTZWjARAAnTzK/GDifZxIv307Amj6lg==
+#mkdir ~/mycephfs
+#ceph-fuse -k ./ceph.client.admin.keyring -m 192.168.21.100:6789,192.168.21.101:6789,192.168.21.102:6789 ~/mycephfs
+apt-get install samba -y;
+useradd admin
+useradd XRGJ
+useradd XTUE
+useradd XUVD
+useradd XVPU
+useradd XWGE
+useradd XXNK
+useradd YAIG
+mkdir -p /mnt/cephfs/{caiwb,gcjsb,jianad,jinglb,public,software,swqcb,zhiab,zonghb}
+echo -e "253016\n253016"|smbpasswd -a -s XRGJ
+echo -e "463535\n463535"|smbpasswd -a -s XTUE
+echo -e "603114\n603114"|smbpasswd -a -s XUVD
+echo -e "842609\n842609"|smbpasswd -a -s XVPU
+echo -e "369080\n369080"|smbpasswd -a -s XWGE
+echo -e "289360\n289360"|smbpasswd -a -s XXNK
+echo -e "586149\n586149"|smbpasswd -a -s YAIG
+vi /etc/samba/smb.conf
+security = user
+guest account = root
+[公共中转站]
+    path = /mnt/cephfs/public
+    guest ok  = yes
+    writable  = yes
+
+[常用软件]
+    path = /mnt/cephfs/software
+    read only = yes
+    guest ok  = yes
+    write list = admin
+    admin users = admin
+
+[工程技术部]
+    path = /mnt/cephfs/gcjsb
+    valid users = XRGJ,admin
+    write list = XRGJ,admin
+    admin users = XRGJ,admin
+
+[建安队]
+    path = /mnt/cephfs/jianad
+    valid users = XTUE,admin
+    write list = XTUE,admin
+    admin users = XTUE,admin
+
+[质安部]
+    path = /mnt/cephfs/zhiab
+    valid users = XUVD,admin
+    write list = XUVD,admin
+    admin users = XUVD,admin
+
+[综合管理部]
+    path = /mnt/cephfs/zonghb
+    valid users = XVPU,admin
+    write list = XVPU,admin
+    admin users = XVPU,admin
+
+[经理部]
+    path = /mnt/cephfs/jinglb
+    valid users = XWGE,admin
+    write list = XWGE,admin
+    admin users = XWGE,admin
+
+[商务器材部]
+    path = /mnt/cephfs/swqcb
+    valid users = XXNK,admin
+    write list = XXNK,admin
+    admin users = XXNK,admin
+
+[财务部]
+    path = /mnt/cephfs/caiwb
+    valid users = YAIG,admin
+    write list = YAIG,admin
+    admin users = YAIG,admin
+/etc/init.d/samba restart
+net use * /del /y
+smbstatus 查看帐号连接状态
+testparm  测试配置文件是否正确
+	
+13、验证
+sudo ceph health
+sudo ceph osd tree
+
+sudo ceph health
+HEALTH_WARN too few PGs per OSD (21 < min 30)   #错误
+sudo ceph osd pool stats
+pool rbd id 0
+  nothing is going on
+
+sudo ceph osd pool set rbd pg_num 128  #每个osd至少30个pgs,,所以5个时就得设置150
+sudo ceph osd pool set rbd pgp_num 128
+sudo ceph osd pool default pg num = 100
+sudo ceph osd pool default pgp num = 100
+
+sudo ceph health
+HEALTH_OK
+sudo ceph osd pool stats
+pools rbd id 0
+  nothing is going on
+
+sudo ceph -s
+sudo ceph -w
+sudo ceph quorum_status --format json-pretty
+sudo ceph mds stat
+sudo ceph mds dump
+
+定位某个对象
+sudo ceph df  #pool name  :rbd
+echo {Test-data} > testfile.txt
+sudo rados put test-object-1 testfile.txt --pool=rbd
+sudo rados -p rbd ls
+sudo rados rm test-object-1 --pool=rbd
+
+误删码 方式创建cephfs
+ceph osd pool create meta_arccache 32 32 replicated replicated_ruleset
+ceph osd pool create arccache 64 64 replicated replicated_ruleset
+ceph osd pool set arccache min_size 2
+ceph osd pool set arccache size 3
+#ceph osd erasure-code-profile set ec62profile k=6 m=2 ruleset-failure-domain=disktype ruleset-root=std
+
+ceph osd erasure-code-profile set SHECprofile \
+        plugin=shec \
+        k=5 m=3 c=2 \
+        ruleset-failure-domain=osd
+ceph osd pool create shec_data 128 128 erasure SHECprofile
+ceph osd pool create meta_shec_data 64 64 erasure SHECprofile
+
+ceph osd tier add-cache shec_data arccache $((1024*1024*1024*300))
+ceph osd tier set-overlay shec_data arccache
+ceph osd tier cache-mode arccache writeback
+ceph osd pool set arccache cache_target_dirty_ratio 0.3
+ceph osd pool set arccache target_max_objects 2000000
+
+ceph osd tier add-cache meta_shec_data meta_arccache $((1024*1024*1024*30))
+ceph osd tier set-overlay meta_shec_data meta_arccache
+ceph osd tier cache-mode meta_arccache writeback
+ceph osd pool set meta_arccache cache_target_dirty_ratio 0.3
+ceph osd pool set meta_arccache target_max_objects 2000000
+
+ceph osd dump | grep -i erasure
+#ceph mds fail 0;ceph fs rm cephfs --yes-i-really-mean-it;ceph mds stat;  停止并删除原有cephfs
+ceph fs new cephfs meta_shec_data shec_data
+mkdir /mnt/cephfs
+mount -t ceph 192.168.21.100:6789,192.168.21.101:6789,192.168.21.102:6789:/ /mnt/cephfs -o name=admin,secret=AQCKPtxXTZWjARAAnTzK/GDifZxIv307Amj6lg==
+fusedav -D -u admin -p password+1S https://yun.koujl.com/remote.php/webdav/ ./nextcloud &
+mount.cifs //192.168.20.25/e$ ./winshare/ --verbose -o rw,user=BHadmin,pass=password+1S
+fio -filename=/dev/rbd0 -direct=1 -iodepth 16 -rw=randwrite -ioengine=libaio -bs=4k -runtime=300 -name=mytest #不能测文件夹
+删除
+ceph osd tier cache-mode meta_arccache forward  --yes-i-really-mean-it
+rados -p meta_arccache ls
+rados -p meta_arccache cache-flush-evict-all
+ceph osd tier remove-overlay meta_shec_data
+ceph osd tier rm meta_shec_data meta_arccache
+ceph osd pool rm meta_arccache meta_arccache --yes-i-really-really-mean-it
+ceph osd pool rm meta_shec_data meta_shec_data --yes-i-really-really-mean-it
+
+ceph osd tier cache-mode arccache forward  --yes-i-really-mean-it
+rados -p arccache ls
+rados -p arccache cache-flush-evict-all
+ceph osd tier remove-overlay shec_data
+ceph osd tier rm shec_data arccache
+ceph osd pool rm arccache arccache --yes-i-really-really-mean-it
+ceph osd pool rm shec_data shec_data --yes-i-really-really-mean-it
+
+14 重新启动
+restart ceph-all
+
+15 删除osd
+ceph auth del osd.8
+ceph osd rm osd.8
+ceph osd crush remove osd.8
+ceph osd crush remove node10
+
+16 性能测试
+我的对当前所在位置的磁盘测性能
+CEPHFS结构下
+cd /mnt/cephfs
+写入1G文件的速度 16 MB/s
+time dd if=/dev/zero of=./1GB bs=4096 count=250000
+读取1G文件的速度 80 MB/s
+time dd if=./1GB of=/dev/null bs=4096 count=250000
+
+测挂载到windows下的rbd块磁盘性能
+apt-get install cifs-utils
+mkdir ~/winshare
+mount.cifs //192.168.20.25/2010$ ./winshare/ --verbose -o rw,user=administrator,pass=123456
+cd ~/winshare
+写入1G文件速度 76 MB/s
+time dd if=/dev/zero of=./1GB bs=4096 count=250000
+读取1G文件速度 95 MB/s
+time dd if=./1GB of=/dev/null bs=4096 count=250000
+
+17。
+
+执行如下命令，就可以解决：
+ceph pg dump_stuck stale && ceph pg dump_stuck inactive && ceph pg dump_stuck unclean
+
+参考文章：http://www.linuxdiyf.com/linux/18428.html
+
+然后验证：
+root@node0:~# rbd ls
+root@node0:~# rbd create aa --size  4G  (4096)
+rbd resize aa --size 2T
+
+root@node0:~# rbd ls
+aa
+root@node0:~# rbd map aa
+/dev/rbd0
+root@node0:~# mkfs.xfs /dev/rbd0
+mkfs.ntfs /dev/rbd0 --fast
+root@node0:~# mkdir rbd
+root@node0:~# mount /dev/rbd0 rbd
+root@node0:~# cd rbd/
+root@node0:~/rbd# dd if=/dev/zero of=aa.data bs=1M count=1000
+1000+0 records in
+1000+0 records out
+1048576000 bytes (1.0 GB) copied, 14.488 s, 72.4 MB/s
+
+///
+ceph-dokan
+https://github.com/ceph/ceph-dokan/releases
+bootstrap.bat
+bjam stage --build-type=minimal --with-system --toolset=gcc
+https://github.com/dokan-dev/dokany/releases?after=0.7.0
+
+TGT iscsi
+apt-get install tgt
+tgtadm --lld iscsi --op show --mode system | grep rbd
+ceph osd pool create rbd 128
+rbd create iscsi0 --size 1T --pool rbd --image-format 2
+在tgt服务中注册刚才创建好的image，只需要将下面的内容添加到/etc/tgt/targets.conf 或者 etc/tgt/conf.d/ceph.conf中即可。
+<target 192.168.21.102:iscsi>
+    driver iscsi
+    bs-type rbd
+    backing-store rbd/iscsi0  # Format is <iscsi-pool>/<iscsi-rbd-image>
+    initiator-address 192.168.20.25    #client address allowed to map the address
+</target>
+service tgt restart
+关闭rbd cache，否则可能导致数据丢失或者损坏
+cd /ceph-cluster 
+vi /etc/ceph/ceph.conf
+[client]
+rbd_cache = false
+#ceph-deploy --overwrite-conf admin node0 node1 node2
+
+NFS服务
+apt-get install nfs-kernel-server
+more /etc/exports
+/mnt/yun   192.168.20.25(rw,no_root_squash)
+/etc/init.d/nfs-kernel-server restart
+exportfs  -av
+
+showmount -e 192.168.21.100
+mount \\192.168.21.100\mnt\yun h:
+
+sudo init 0
+显示 Ceph 集群中每个 OSD 中包含的 PGs 数量
+sudo ceph --format xml pg dump | xmlstarlet sel -t -m "//pg_stats/pg_stat/acting" -v osd -n | sort -n | uniq -c
+
+ubuntu  samba v4
+apt-get install samba
+
+/etc/hosts
+192.168.20.15   ServerX.bhhxcc.com ServerX
+192.168.20.25   ServerY.bhhxcc.com ServerY
+export PATH=/usr/local/samba/bin/:/usr/local/samba/sbin/:$PATH
+
+FREENAS
+http://www.freenas.org/download-freenas-release/
+https://download.freenas.org/9.10/STABLE/latest/x64/FreeNAS-9.10.1-U2.iso
+PowerISO 制作可启动U盘
+安装时需要数分钟，等待安装完成即可。
+ifconfig re0 192.168.21.99 255.255.255.0 192.168.21.1
+
+OWNcloud
+文件恢复密码：Szhx.....
+apt-get install axel
+cd /var/www
+axel -n 10 https://download.owncloud.org/community/owncloud-9.1.1.tar.bz2
+tar -jxf owncloud-9.1.1.tar.bz2
+rm -rf html
+mv owncloud html
+cd html
+//打补丁
+diff -ru /var/www/html /usr/src/core/build/dist/owncloud/ >new.patch
+vi new.patch #删除自己动手改动的部分
+patch -p0 < new.patch
+rm new.patch
+
+apt-get install php-zip php-dompdf php-xml php-mbstring php-gd php-curl
+mkdir /mnt/cephfs
+root@owncloud:/var/www# mount -t ceph 192.168.21.100:6789,192.168.21.101:6789,192.168.21.102:6789:/ /mnt/cephfs -o name=admin,secret=AQCKPtxXTZWjARAAnTzK/GDifZxIv307Amj6lg==
+mkdir /mnt/cephfs/data
+chown -R www-data:www-data html
+cd html
+安装方式A
+sudo -u www-data php occ  maintenance:install --database "mysql" --database-name "owncloud"  --database-user "root" --database-pass "password+1S" --admin-user "admin" --admin-pass "password+1S"
+安装方式B
+http://ip
+
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' identified by 'password+1S' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+set password =password('password+1S');
+
+vi /etc/mysql/mysql.conf.d/mysqld.cnf
+[mysqld]
+...
+bind_address=127.0.0.1 # 屏蔽掉该处 ...
+/etc/init.d/mysql restart
+vi /etc/php/7.0/cli/php.ini
+vi /etc/php/7.0/apache2/php.ini
+post_max_size = 8M
+upload_max_filesize = 2M
+
+<<<<<<<<<<<<<<<
+在线编辑https://www.collaboraoffice.com/code/
+https://nextcloud.com/collaboraonline/
+docker pull collabora/code
+docker run -t -d -p 127.0.0.1:9980:9980 -e "domain=yun\.koujl\.com" --net host --restart always --cap-add MKNOD collabora/code
+#docker exec -i -t a336bdd09e74 /bin/bash
+
+ln -s /var/lib/docker/aufs/diff/a4de611fb64c5afce349a6f4a40e6bf2d62ef1db4681e1c848a894c053504230/etc/loolwsd/ /etc/loolwsd
+ln -s /var/www/html/resources/ /resources.
+cat /etc/loolwsd/ca-chain.cert.pem >> /resources/config/ca-bundle.crt
+
+find / -name ca-chain.cert.pem
+mkdir -p /etc/letsencrypt /var/lib/letsencrypt
+docker run -it --rm  \
+    -p 80:80 -p 443:443 \
+    -v /etc/letsencrypt:/etc/letsencrypt \
+    -v /var/lib/letsencrypt:/var/lib/letsencrypt \
+    quay.io/letsencrypt/letsencrypt:latest certonly --standalone --agree-tos -t -d yun.koujl.com -m 2338953@qq.com
+
+apt-get install apache2
+a2enmod proxy
+a2enmod proxy_wstunnel
+a2enmod proxy_http
+a2enmod ssl
+
+获取免费证书
+https://certbot.eff.org/#ubuntuxenial-apache
+apt-get install python-letsencrypt-apache
+letsencrypt --apache
+
+docker run -d \
+    -e REDIS_ENABLED=true \
+    -e OVERWRITEPROTOCOL=https \
+    --name nc \
+    aheimsbakk/nextcloud:10
+docker run -it --rm  \
+    -p 80:80 -p 443:443 \
+    -v /etc/letsencrypt:/etc/letsencrypt \
+    -v /var/lib/letsencrypt:/var/lib/letsencrypt \
+    quay.io/letsencrypt/letsencrypt:latest certonly --standalone --agree-tos -t -d yun.koujl.com -m webmaster@koujl.com
+
+
+cd /var/www
+wget https://download.nextcloud.com/server/releases/nextcloud-10.0.1.tar.bz2
+tar -jxf nextcloud-10.0.1.tar.bz2
+rm -rf html
+mv owncloud html
+chown -R www-data:www-data html
+mkdir -p /mnt/cephfs/nextcloud
+chown -R www-data:www-data /mnt/cephfs/nextcloud
+
+
+
+
+
+ONLYOFFICE
+http://helpcenter.onlyoffice.com/server/docker/community/docker-installation.aspx
+apt-get install docker.io
+#准备工作
+mkdir -p /mnt/cephfs
+mount -t ceph 192.168.21.100:6789,192.168.21.101:6789,192.168.21.102:6789:/ /mnt/cephfs -o name=admin,secret=AQCKPtxXTZWjARAAnTzK/GDifZxIv307Amj6lg==
+vi /etc/rc.local
+mkdir -p /mnt/cephfs/onlyoffice/DocumentServer/data /mnt/cephfs/onlyoffice/CommunityServer/data
+
+#运行docker
+docker network create --driver bridge onlyoffice
+
+docker run --net onlyoffice -i -t -d --restart=always --name onlyoffice-document-server \
+    -v /mnt/cephfs/onlyoffice/DocumentServer/data:/var/www/onlyoffice/Data \
+    onlyoffice/documentserver
+#docker exec -i -t 83c968e4b6ab /bin/bash
+
+docker run --net onlyoffice -i -t -d --restart=always --name onlyoffice-community-server \
+    -p 80:80 -p 5222:5222 -p 443:443 \
+    -v /mnt/cephfs/onlyoffice/CommunityServer/data:/var/www/onlyoffice/Data \
+    -e DOCUMENT_SERVER_PORT_80_TCP_ADDR=onlyoffice-document-server \
+    onlyoffice/communityserver
+#docker exec -i -t e6cb2d64dcd5 /bin/bash
+
+mysql -u root -p 空密码
+use mysql;
+select Host,User from user;
+update user set Host="%" where User="debian-sys-maint";
+flush privileges;
+
+uR0shQDVWTXFiZvh
+vi /etc/mysql/my.conf  #127.0.0.1
+/etc/init.d/mysql restart
+
+
+
+
+DOCKER
+http://tech.it168.com/a2015/0413/1719/000001719309.shtml
+https://download.openvz.org/template/precreated/
+
+yum install http://mirrors.yun-idc.com/epel/7/x86_64/e/epel-release-7-8.noarch.rpm
+yum install docker-io
+ service docker restart
+yum install axel
+axel -n 10 http://download.openvz.org/template/precreated/ubuntu-14.04-x86_64-minimal.tar.gz
+axel -n 10 https://download.openvz.org/template/precreated/centos-7-x86_64.tar.gz
+cat ubuntu-14.04-x86_64-minimal.tar.gz |docker import - ubuntu:14.04
+cat centos-7-x86_64.tar.gz |docker import - centos:7
+
+docker run -t -i ubuntu:base /bin/bash
+查看『刚』运行过的容器！
+docker ps -l
+docker commit 22bb071e070b ubuntu:axel
+
+https://github.com/Supervisor/initscripts
+apt-get install supervisor
+cd /etc/supervisor/
+cp /etc/supervisor/supervisord.conf /etc/supervisor/conf.d/
+
+vi /etc/supervisor/conf.d/supervisord.conf
+[supervisord] 
+logfile=/var/log/supervisor/supervisord.log ; (main log file;default $CWD/supervisord.log) 
+pidfile=/var/run/supervisord.pid ; (supervisord pidfile;default supervisord.pid) 
+childlogdir=/var/log/supervisor ; ('AUTO' child log dir, default $TEMP) 
+nodaemon=true ;(修改该软件的启动模式为非daemon，否则docker 在执行的时候会直接退出) 
+[include] 
+files = /etc/supervisor/conf.d/*.conf 
+[program:sshd] 
+command = /usr/sbin/sshd -D ; 
+
+mkdir /var/run/sshd  
+
+六.开始分配容器
+docker run -d -v /mnt/cephfs:/ceph --name dev ubuntu:axelold2 /usr/bin/supervisord
+docker run -d --name client2 ubuntu:axelold2 /usr/bin/supervisord
+docker run -d --name clientN ubuntu:axelold2 /usr/bin/supervisord
+
+<<<<<<<<<<<<<<<<<<<<<<
+http://stackoverflow.com/a/24334000
+宿主机的CEPH文件夹
+docker run -d -v /mnt/cephfs:/ceph --name dev ubuntu:axelold2 /usr/bin/supervisord
+ls: cannot open directory .: Permission denied
+进入host之后无权限，在宿主机运行如下命令可解决
+su -c "setenforce 0"
+  or 
+vi /etc/selinux/config
+#SELINUX=enforcing  
+SELINUX=disabled
+>>>>>>>>>>>>>>>>>>>>>>>
+
+mount -t ceph 192.168.21.101:6789:/ /mnt/cephfs -o name=admin,secret=AQCKPtxXTZWjARAAnTzK/GDifZxIv307Amj6lg==
+docker pull parkomat/parkomat
+docker run -d -e PARKOMAT_CONFIG_FILE=/opt/parkomat/config.toml -v /mnt/cephfs/parkomat:/opt/parkomat -p 53:53/udp parkomat/parkomat
+docker run -d -e PARKOMAT_CONFIG_FILE=/opt/parkomat/config.toml -v /mnt/cephfs/parkomat:/opt/parkomat parkomat/parkomat
+Remember to have config.toml file in your /mnt/cephfs/parkomat path.
+
+
+docker pull mbessler/docker-cephfs-nginx
+docker run -d --rm --net host --volumes-from rbd --privileged -v /lib/modules:/lib/modules -e CEPHFS=192.168.21.100,192.168.21.101,192.168.21.102:/ mbessler/docker-cephfs-nginx
+
+docker run -d --net host --privileged -v /lib/modules:/lib/modules -v /etc/ceph:/etc/ceph -e CEPHFS=192.168.21.100,192.168.21.101,192.168.21.102:/ mbessler/docker-cephfs-nginx
+
+
+
+
+
+
+apt-get install bridge-utils uml-utilities;
+tunctl -b
+tunctl -b
+tunctl -b
+tunctl -b
+ip link set tap0 up
+ip link set tap1 up
+ip link set tap2 up
+ip link set tap3 up
+brctl addbr br0
+ip link set br0 up
+brctl addif br0 tap0
+brctl addif br0 tap1
+brctl addif br0 tap2
+brctl addif br0 tap3
+ifconfig eth0 0.0.0.0;ifconfig br0 192.168.21.111/24;
+brctl addif br0 eth0
+
+route add default gw 192.168.21.1
+brctl show
+
+veth385d6f5  docker0
+ifconfig p4p1 0.0.0.0;ifconfig docker0 192.168.21.110/24;brctl addif docker0 p4p1
+
+//不知道要做什么
+http://docs.openstack.org/developer/openstack-ansible/developer-docs/quickstart-aio.html
+git clone https://github.com/openstack/openstack-ansible /opt/openstack-ansible
+cd /opt/openstack-ansible
+# # List all existing tags.
+# git tag -l
+
+# # Checkout the stable branch and find just the latest tag
+# git checkout stable/mitaka
+# git describe --abbrev=0 --tags
+
+# # Checkout the latest tag from either method of retrieving the tag.
+# git checkout 14.0.0.0b3
+
+
+apt-get install bridge-utils debootstrap ifenslave ifenslave-2.6 lsof lvm2 ntp ntpdate openssh-server sudo tcpdump vlan
+echo 'bonding' >> /etc/modules
+echo '8021q' >> /etc/modules
+service ntp restart
+#vgcreate cinder-volumes volumes
+
+
+cp -rf etc/openstack_deploy /etc
+vi /etc/openstack_deploy/user_variables.yml
+cd /etc/openstack_deploy/
+cp  /etc/openstack_deploy/openstack_user_config.yml.example /etc/openstack_deploy/openstack_user_config.yml
+
+
+
+
+export BOOTSTRAP_OPTS="bootstrap_host_data_disk_device=sda3"
+export ANSIBLE_ROLE_FETCH_MODE=git-clone
+scripts/bootstrap-ansible.sh
+scripts/bootstrap-aio.sh
+
+mkdir -p /openstack/log/ansible-logging
+cd /opt/openstack-ansible/
+scripts/run-playbooks.sh
+
+
+
+
+新建私有仓库
+仓库机
+sudo docker pull registry 
+sudo docker run -d -p 5000:5000 registry  
+sudo docker run -d -p 5000:5000 -v /opt/data/registry:/tmp/registry registry  
+客机
+sudo docker pull busybox  
+sudo docker tag busybox 192.168.112.136:5000/busybox  
+sudo docker push 192.168.112.136:5000/busybox  
+
+sudo vi /etc/init/docker.conf  
+在其中"docker" -d $DOCKEROPTS --insecure-registry 192.168.112.136:5000
+sudo restart docker  
+sudo docker push 192.168.112.136:5000/busybox  
+删除本地镜像
+docker rmi 192.168.112.136:5000/busybox  
+sudo docker pull 192.168.112.136:5000/busybox  
+
+
+neutron net-create --router:external=true --is_default=true --provider:network_type=local --shared --provider:physical_network=p4p1 wan 
+neutron subnet-create --name terry_pub_net1 --allocation-pool start=192.168.21.104,end=192.168.21.109 --gateway 192.168.21.1 --dns-nameserver 8.8.8.8 --enable_dhcp=False --ip-version 4 wan 192.168.21.0/24  
+
+apt-get install openvswitch-switch
+apt-get install openstack-neutronopenstack-neutron-ml2 openstack-neutron-openvswitch
+
+vi /etc/neutron/plugins/ml2/ml2_conf.ini 
+
+
+nova network-list | grep pub1
+
+/etc/neutron/l3_agent.ini
+
+gateway_external_network_id = f59f3dd3-54fb-453e-9bbd-944ebfb18f65 
+handle_internal_only_routers = True  
+external_network_id = f59f3dd3-54fb-453e-9bbd-944ebfb18f65  
+external_network_bridge = br-ex  
+
+/etc/init.d/neutron-l3-agent restart  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+http://openstack.prov12n.com/chef-razor-openstack-part-1/
+axel -n 10 https://packages.chef.io/stable/ubuntu/14.04/chef-server-core_12.0.8-1_amd64.deb
+dpkg -i chef-server-core_12.0.8-1_amd64.deb
+chef-server-ctl reconfigure
+chef-server-ctl test
+
+mkdir ~/.chef
+cp /etc/chef-server/admin.pem ~/.chef
+cp /etc/chef-server/chef-validator.pem ~/.chef
+
+# Install chef client
+curl -L https://www.opscode.com/chef/install.sh | sudo bash
+
+# Make knife.rb
+cat > ~/.chef/knife.rb <<EOF
+log_level                :info
+log_location             STDOUT
+node_name                'admin'
+client_key               '~/.chef/admin.pem'
+validation_client_name   'chef-validator'
+validation_key           '~/.chef/chef-validator.pem'
+chef_server_url          'https://chef.book'
+cookbook_path            '/root/cookbooks/'
+syntax_check_cache_path  '~/.chef/syntax_check_cache'
+EOF
+
+# Pull down the Razor & Rackspace OpenStack cookbooks
+apt-get install git
+git clone git://github.com/opscode/chef-repo.git /root/cookbooks
+git clone --recursive git://github.com/rcbops/chef-cookbooks.git /root/alamo
+
+git config --global user.email "2338953@qq.com"
+git config --global user.name "siry"
+
+knife cookbook site install razor
+knife cookbook site install dhcp
+
+sudo knife data bag create dhcp_networks
+mkdir -p /root/databags/dhcp_networks
+sudo cat > /root/databags/dhcp_networks/razor_dhcp.json <<EOF
+{
+"id": "172-16-0-0_24″,
+"routers": [ "172.16.0.2" ],
+"address": "172.16.0.0″,
+"netmask": "255.255.255.0″,
+"broadcast": "172.16.0.255″,
+"range": "172.16.0.50 172.16.0.59″,
+"options": [ "next-server 172.16.0.101" ]
+}
+EOF
+sudo knife data bag from file dhcp_networks /root/databags/dhcp_networks/razor_dhcp.json
+
+sudo knife cookbook upload -o /root/alamo/cookbooks –all
+RAZOR_IP=\"172.16.0.101\"
+sudo sed -i "s/node\['ipaddress'\]/$RAZOR_IP/g" /root/cookbooks/razor/attributes/default.rb
+sudo knife cookbook upload -o /root/cookbooks –all
+
+sudo knife role from file /root/alamo/roles/*.rb
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+apt-get install python-openstackclient
+
+1、加更新源
+apt-get install software-properties-common
+add-apt-repository cloud-archive:mitaka
+apt-get update
+apt-get dist-upgrade
+apt-get install mariadb-server python-mysqldb
+vi /etc/mysql/conf.d/openstack.cnf
+[mysqld]
+bind-address = 192.168.21.110
+default-storage-engine = innodb
+innodb_file_per_table
+collation-server = utf8_general_ci
+character-set-server = utf8
+
+apt-get install mongodb-server mongodb-clients python-pymongo
+vi /etc/mongodb.conf
+bind_ip = 192.168.21.110
+#set Journal File Size
+smallfiles = true
+
+service mongodb stop
+rm /var/lib/mongodb/journal/prealloc.*
+service mongodb start
+
+
+apt-get install rabbitmq-server
+rabbitmqctl add_user openstack password+1S
+rabbitmqctl set_permissions openstack ".*" ".*" ".*"
+sudo apt-get install memcached python-memcache
+vi /etc/memcached.conf
+-l 192.168.21.110
+
+mysql -u root -p
+CREATE DATABASE keystone;
+GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' IDENTIFIED BY 'password+1S';
+GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' IDENTIFIED BY 'password+1S';
+
+mysql -hlocalhost -ukeystone -p
+mysql -hnode10 -ukeystone -p
+telnet node10 3306
+
+生成临时管理身份认证令牌（ADMIN_TOKEN） 
+生成一个随机值，作为keystone初始配置时的ADMIN_TOKEN
+openssl rand -hex 10
+记住ADMIN_TOKEN：7cbf509288e2a437beb8
+
+/etc/init.d/keystone stop  #默认这个开启占用了5000端口
+vi /etc/init/keystone.override
+manual
+apt-get install keystone apache2 libapache2-mod-wsgi
+vi /etc/keystone/keystone.conf
+admin_token = 7cbf509288e2a437beb8
+[database]
+#connection = sqlite:////var/lib/keystone/keystone.db
+connection = mysql+pymysql://keystone:password+1S@node10/keystone
+[token]
+#provider = uuid
+provider = fernet
+
+su root
+su -s /bin/sh -c "keystone-manage db_sync" keystone
+keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+
+vi /etc/apache2/apache2.conf
+vi /etc/apache2/sites-available/000-default.conf
+ServerName node10
+
+vi /etc/apache2/sites-available/wsgi-keystone.conf
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+Listen 5000
+Listen 35357
+
+<VirtualHost *:5000>
+    WSGIDaemonProcess keystone-public processes=5 threads=1 user=keystone group=keystone display-name=%{GROUP}
+    WSGIProcessGroup keystone-public
+    WSGIScriptAlias / /usr/bin/keystone-wsgi-public
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIPassAuthorization On
+    ErrorLogFormat "%{cu}t %M"
+    ErrorLog /var/log/apache2/keystone.log
+    CustomLog /var/log/apache2/keystone_access.log combined
+
+    <Directory /usr/bin>
+        Require all granted
+    </Directory>
+</VirtualHost>
+
+<VirtualHost *:35357>
+    WSGIDaemonProcess keystone-admin processes=5 threads=1 user=keystone group=keystone display-name=%{GROUP}
+    WSGIProcessGroup keystone-admin
+    WSGIScriptAlias / /usr/bin/keystone-wsgi-admin
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIPassAuthorization On
+    ErrorLogFormat "%{cu}t %M"
+    ErrorLog /var/log/apache2/keystone.log
+    CustomLog /var/log/apache2/keystone_access.log combined
+
+    <Directory /usr/bin>
+        Require all granted
+    </Directory>
+</VirtualHost>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ln -s /etc/apache2/sites-available/wsgi-keystone.conf /etc/apache2/sites-enabled
+service apache2 restart
+telnet node10 35357
+telnet node10 5000
+rm -f /var/lib/keystone/keystone.db
+
+export OS_TOKEN=7cbf509288e2a437beb8
+export OS_URL=http://node10:35357/v3
+export OS_IDENTITY_API_VERSION=3
+② 創建服務實體 
+身份服務管理着一個OpenStack的服務目錄，通過服務目錄確定其他服務是否可用。創建服務實體命令如下：
+openstack service create --name keystone --description "OpenStack Identity" identity
+
+③ 創建API路徑 
+OpenStack每個服務可使用三種API路徑變體：admin，internal和public。默認情況，admin類型的API路徑可修改用戶（user）和租戶（tenant），而internal和public類型的API路徑不允許該操作。創建API路徑命令如下：
+openstack endpoint create --region RegionOne identity public http://node19:5000/v3
+openstack endpoint create --region RegionOne identity internal http://node10:5000/v3
+openstack endpoint create --region RegionOne identity admin http://node10:35357/v3
+
+創建域（Domain）、計劃（Project）、用戶（User）、角色（Role） 
+① 創建默認域
+openstack domain create --description "Default Domain" default
+② 創建管理計劃、管理用戶、管理角色 
+admin project、admin user、admin role 
+注：添加admin用戶時需設置密碼ADMIN_PASS为前面設計的實際密碼。
+openstack project create --domain default --description "Admin Project" admin
+openstack user create --domain default --password-prompt admin
+openstack role create admin
+注：創建的任何角色都必須映射到OpenStack配置文件policy.json指定的角色。 
+將admin角色授予admin計劃和admin用戶：
+openstack role add --project admin --user admin admin
+
+③ 創建服務計劃 
+本文創建的服務計劃每個服務僅包含一個唯一用戶，可根據實際情況調整。
+openstack project create --domain default --description "Service Project" service
+④ 創建示例計劃、示例用戶、普通用戶角色 
+常規任務（非管理任務）應該使用非特權計劃和用戶。 
+注：添加demo用戶時需設置密碼DEMO_PASS为前面設計的實際密碼。
+openstack project create --domain default --description "Demo Project" demo
+openstack user create --domain default --password-prompt demo
+openstack role create user
+將普通用戶角色授予示例計劃和示例用戶：
+openstack role add --project demo --user demo user
+注：可重复執行上面步驟，創建其他需要的計劃和用戶。
+
+
+
+驗證Keystone組件配置是否正確 
+① 處於安全考慮，禁用臨時身份認證令牌機制。 
+修改文件sudo vi /etc/keystone/keystone-paste.ini，從[pipeline:public_api]、[pipeline:admin_api]，[pipeline:api_v3]處移除admin_token_auth配置信息。 
+
+② 取消環境變量OS_TOKEN和OS_URL
+unset OS_TOKEN OS_URL
+③ 为admin用戶申請一個身份認證令牌
+openstack --os-auth-url http://node10:35357/v3 --os-project-domain-name default --os-user-domain-name default --os-project-name admin --os-username admin token issue
+輸入admin用戶密碼ADMIN_PASS password+1S。（將ADMIN_PASS替換为前面設計的實際密碼） 
+若報錯：   
+'NoneType' object has no attribute 'service_catalog'
+可執行：export OS_AUTH_TYPE=password 
+可能還會報錯：
+__init__() got an unexpected keyword argument 'token'
+在執行下面創建環境腳本後重新測試發現已解决，猜測是環境變量OS_TOKEN OS_URL未取消，可再次執行unset OS_TOKEN OS_URL試試。 
+③ 为demo用戶申請一個身份認證令牌
+openstack --os-auth-url http://node10:5000/v3 --os-project-domain-name default --os-user-domain-name default --os-project-name demo --os-username demo token issue
+輸入demo用戶密碼DEMO_PASS  demo。（將DEMO_PASS替換为前面設計的實際密碼） 
+注：上述設置OpenStack命令行参數的方式比較繁瑣，可采用預先創建用戶腳本的方式，在申請身份認證令牌時，只需執行如下命令：
+source ~/.openstack/.admin-openrc
+openstack token issue
+或者
+source ~/.openstack/.demo-openrc
+openstack token issue
+注：創建OpenStack客戶端環境腳本方法如下
+cd ~
+mkdir ~/.openstack
+为管理用戶admin創建OpenStack客戶端環境腳本，vi ~/.openstack/.admin-openrc，添加 
+注：將下面ADMIN_PASS替換为前面設計的實際密碼
+
+# Add environment variables for admin
+
+export OS_PROJECT_DOMAIN_NAME=default
+export OS_USER_DOMAIN_NAME=default
+export OS_PROJECT_NAME=admin
+export OS_USERNAME=admin
+export OS_PASSWORD=password+1S
+export OS_AUTH_URL=http://node10:35357/v3
+export OS_AUTH_TYPE=password
+export OS_IDENTITY_API_VERSION=3
+export OS_IMAGE_API_VERSION=2
+为示例用戶demo創建OpenStack客戶端環境腳本，vi ~/.openstack/.demo-openrc，添加 
+注：將下面DEMO_PASS替換为前面設計的實際密碼
+
+# Add environment variables for demo
+
+export OS_PROJECT_DOMAIN_NAME=default
+export OS_USER_DOMAIN_NAME=default
+export OS_PROJECT_NAME=demo
+export OS_USERNAME=demo
+export OS_PASSWORD=demo
+export OS_AUTH_URL=http://node10:5000/v3
+export OS_AUTH_TYPE=password
+export OS_IDENTITY_API_VERSION=3
+export OS_IMAGE_API_VERSION=2
+最後，測試Identity服務是否正常，訪問http://192.168.21.110:35357/v3或http://192.168.21.110:5000/v3。可在各節點上安裝curl，訪問服務API路徑，下載查看信息，如下：
+sudo apt-get install curl
+curl http://192.168.21.110:35357/v3
+curl http://192.168.21.110:5000/v3
+curl http://node10:35357/v3
+curl http://node10:5000/v3
+得到如下信息：
+{"version": {"status": "stable", "updated": "2016-04-04T00:00:00Z", "media-types": [{"base": "application/json", "type": "application/vnd.openstack.identity-v3+json"}], "id": "v3.6", "links": [{"href": "http://192.168.10.3:35357/v3/", "rel": "self"}]}}
+
+4.3 鏡像服務配置（Image Service - Glance）
+用戶可使用OpenStack鏡像服務提供的REST API查詢、注冊、恢复虛擬機鏡像。
+部署節點：Controller Node10
+mysql -u root -p
+CREATE DATABASE glance;
+GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'localhost' IDENTIFIED BY 'password+1S';
+GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'%' IDENTIFIED BY 'password+1S';
+
+創建Glance服務實體和API路徑 
+① 設置OpenStack中admin用戶環境變量
+source ~/.openstack/.admin-openrc
+② 在OpenStack中創建一個glance用戶
+openstack user create --domain default --password-prompt glance
+輸入用戶glance的密碼GLANCE_PASS（將GLANCE_PASS替換为前面設計的實際密碼）。 
+③ 將admin角色授予glance用戶和service計劃
+openstack role add --project service --user glance admin
+④ 創建glance服務實體
+openstack service create --name glance --description "OpenStack Image" image
+⑤ 創建鏡像服務API路徑
+openstack endpoint create --region RegionOne image public http://node10:9292
+openstack endpoint create --region RegionOne image internal http://node10:9292
+openstack endpoint create --region RegionOne image admin http://node10:9292
+安裝和配置Glance服務組件 
+① 安裝Glance
+apt-get install glance
+
+<<<<<<<<<<<ceph  http://anystacker.com/2013/05/devstack-and-ceph-tutorial/
+sudo ceph auth get-or-create client.images | sudo tee /etc/ceph/ceph.client.images.keyring
+sudo chown glance:glance /etc/ceph/ceph.client.images.keyring
+
+apt-get install python-ceph
+vi /etc/glance/glance-api.conf
+[glance_store]
+stores = rbd,file,http
+default_store = rbd
+rbd_store_chunk_size = 8
+rbd_store_pool = images
+rbd_store_user = images
+rbd_store_ceph_conf = /etc/ceph/ceph.conf
+>>>>>>>>>>>>>>>>>
+
+vi /etc/glance/glance-api.conf
+在[database]處，配置數據庫訪問連接。
+connection = mysql+pymysql://glance:password+1S@node10/glance
+在[keystone_authtoken]和[paste_deploy]處，配置身份服務訪問。 
+注：注釋掉[keystone_authtoken]處所有默認內容
+[keystone_authtoken]
+auth_uri = http://node10:5000
+auth_url = http://node10:35357
+memcached_servers = node10:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = glance
+password = password+1S
+
+[paste_deploy]
+flavor = keystone
+[glance_store] #配置本地文件系統存儲和鏡像文件存儲位置。
+stores = file,http
+default_store = file
+filesystem_store_datadir = /var/lib/glance/images/
+
+③ 修改配置文件
+vi /etc/glance/glance-registry.conf
+在[database]處，配置數據庫訪問連接。
+connection = mysql+pymysql://glance:password+1S@node10/glance
+在[keystone_authtoken]和[paste_deploy]處，配置身份服務訪問。 
+注：注釋掉[keystone_authtoken]處所有默認內容
+[keystone_authtoken]
+auth_uri = http://node10:5000
+auth_url = http://node10:35357
+memcached_servers = node10:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = glance
+password = password+1S
+
+[paste_deploy]
+flavor = keystone
+
+
+
+
+
+
+
+④ 將配置信息寫入glance數據庫
+su root
+su -s /bin/sh -c "glance-manage db_sync" glance
+⑥ 重启Image Service
+sudo service glance-registry restart
+sudo service glance-api restart
+驗證Glance服務組件配置是否正確 
+① 設置OpenStack admin用戶環境變量
+source ~/.openstack/.admin-openrc
+② 下載CirrOS系統鏡像 
+注：此處采用CirrOS鏡像測試，也可自行選擇其他系統鏡像
+wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
+wget http://download.cirros-cloud.net/daily/20160722/cirros-d160722-x86_64-disk.img
+③ 上傳鏡像，設置鏡像参數磁盤格式QEMU Copy On Write 2 (QCOW2)、容器格式bare及可見性public。
+openstack image create "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --public
+openstack image create "cirros new" --file cirros-d160722-x86_64-disk.img --disk-format qcow2 --container-format bare --public
+
+④ 確認上傳是否成功，驗證鏡像屬性。
+openstack image list
+Password: 
++--------------------------------------+-------------------------+--------+
+| ID                                   | Name                    | Status |
++--------------------------------------+-------------------------+--------+
+| 6d07d4e1-3b9d-4986-b1d7-8dd92ec9bd2c | cirros                  | active |
++--------------------------------------+-------------------------+--------+
+rados -p images ls
+
+4.4 计算服务配置（Compute Service - Nova）
+需要安裝nova-api、nova-conductor、nova-consoleauth、nova-novncproxy、nova-scheduler
+mysql -u root -p
+CREATE DATABASE nova_api;
+CREATE DATABASE nova;
+GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'localhost' IDENTIFIED BY 'password+1S';
+GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'%' IDENTIFIED BY 'password+1S';
+GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'localhost' IDENTIFIED BY 'password+1S';
+GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'%' IDENTIFIED BY 'password+1S';
+
+source ~/.openstack/.admin-openrc
+openstack user create --domain default --password-prompt nova
+openstack role add --project service --user nova admin
+④ 创建nova服务实体
+openstack service create --name nova --description "OpenStack Compute" compute
+⑤ 创建计算服务API路径
+openstack endpoint create --region RegionOne compute public http://node10:8774/v2.1/%\(tenant_id\)s
+openstack endpoint create --region RegionOne compute internal http://node10:8774/v2.1/%\(tenant_id\)s
+openstack endpoint create --region RegionOne compute admin http://node10:8774/v2.1/%\(tenant_id\)s
+
+安裝计算服务组件 
+① 安裝Nova组件
+apt-get install nova-api nova-conductor nova-consoleauth nova-novncproxy nova-scheduler
+
+vi /etc/nova/nova.conf
+<<<<<<<<<<<<<<<<<
+#enabled_apis=ec2,osapi_compute,metadata
+enabled_apis=osapi_compute,metadata
+rpc_backend = rabbit
+auth_strategy = keystone
+my_ip = 192.168.21.110
+use_neutron = True
+firewall_driver = nova.virt.firewall.NoopFirewallDriver
+#logdir=/var/log/nova
+
+[api_database]
+connection = mysql+pymysql://nova:password+1S@node10/nova_api
+
+[database]
+connection = mysql+pymysql://nova:password+1S@node10/nova
+
+[oslo_messaging_rabbit]
+rabbit_host = node10
+rabbit_userid = openstack
+rabbit_password = password+1S
+
+[keystone_authtoken]
+auth_uri = http://node10:5000
+auth_url = http://node10:35357
+memcached_servers = node10:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = nova
+password = password+1S
+
+[vnc]
+vncserver_listen = $my_ip
+vncserver_proxyclient_address = $my_ip
+
+[glance]
+api_servers = http://node10:9292
+
+[oslo_concurrency]
+lock_path = /var/lib/nova/tmp
+>>>>>>>>>>>>>>>>>>>>>>>>>
+su -s /bin/sh -c "nova-manage api_db sync" nova
+su -s /bin/sh -c "nova-manage db sync" nova
+service nova-api restart
+service nova-consoleauth restart
+service nova-scheduler restart
+service nova-conductor restart
+service nova-novncproxy restart
+
+
+
+布署计算节点：Compute Node 
+apt-get install nova-compute-qemu nova-compute-libvirt
+vi /etc/nova/nova.conf 
+① 在[DEFAULT]和[oslo_messaging_rabbit]處配置RabbitMQ消息隊列訪問 
+注：將RABBIT_PASS替換为前面設計的實際密碼
+[DEFAULT]
+rpc_backend = rabbit
+auth_strategy = keystone
+my_ip = 192.168.21.111
+use_neutron = True
+firewall_driver = nova.virt.firewall.NoopFirewallDriver
+#logdir=/var/log/nova
+
+[oslo_messaging_rabbit]
+rabbit_host = node10
+rabbit_userid = openstack
+rabbit_password = password+1S
+
+[keystone_authtoken]
+auth_uri = http://node10:5000
+auth_url = http://node10:35357
+memcached_servers = node10:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = nova
+password = password+1S
+
+[vnc]
+enabled = True
+vncserver_listen = 0.0.0.0
+vncserver_proxyclient_address = $my_ip
+novncproxy_base_url = http://node10:6080/vnc_auto.html
+
+[glance]
+api_servers = http://node10:9292
+
+[oslo_concurrency]
+lock_path = /var/lib/nova/tmp
+
+完成安裝，重启計算服務 
+service nova-compute restart
+① 檢測是否支持虛擬機硬件加速
+egrep -c '(vmx|svm)' /proc/cpuinfo
+若返回結果大於等於1，則支持，無需做額外配置； 
+若返回結果0，則不支持硬件加速，需要做以下額外配置：修改配置文件sudo vi /etc/nova/nova-compute.conf中的libvirt設置項，使用QEMU代替KVM。
+[libvirt]
+virt_type = qemu
+② 重启計算服務
+sudo service nova-compute restart
+驗證計算服務是否安裝正確 
+在node10节点执行執行 
+source ~/.openstack/.admin-openrc
+openstack compute service list
++----+------------------+--------+----------+---------+-------+----------------------------+
+| Id | Binary           | Host   | Zone     | Status  | State | Updated At                 |
++----+------------------+--------+----------+---------+-------+----------------------------+
+|  5 | nova-consoleauth | node10 | internal | enabled | up    | 2016-09-19T07:29:17.000000 |
+|  6 | nova-conductor   | node10 | internal | enabled | up    | 2016-09-19T07:29:23.000000 |
+|  7 | nova-scheduler   | node10 | internal | enabled | up    | 2016-09-19T07:29:23.000000 |
+|  8 | nova-compute     | node10 | nova     | enabled | up    | 2016-09-19T07:29:22.000000 |
++----+------------------+--------+----------+---------+-------+----------------------------+
+
+4.5 网络服务配置（Networking Service - Neutron）
+mysql -u root -p
+CREATE DATABASE neutron;
+GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost' IDENTIFIED BY 'password+1S';
+GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%' IDENTIFIED BY 'password+1S';
+quit
+source ~/.openstack/.admin-openrc
+openstack user create --domain default --password-prompt neutron
+openstack role add --project service --user neutron admin
+openstack service create --name neutron --description "OpenStack Networking" network
+openstack endpoint create --region RegionOne network public http://node10:9696
+openstack endpoint create --region RegionOne network internal http://node10:9696
+openstack endpoint create --region RegionOne network admin http://node10:9696
+
+apt-get install neutron-server neutron-plugin-ml2
+vi /etc/neutron/neutron.conf
+[database]
+connection = mysql+pymysql://neutron:password+1S@node10/neutron
+[DEFAULT]
+core_plugin = ml2
+service_plugins = router
+allow_overlapping_ips = True
+rpc_backend = rabbit
+auth_strategy = keystone
+notify_nova_on_port_status_changes = True
+notify_nova_on_port_data_changes = True
+
+[oslo_messaging_rabbit]
+rabbit_host = node10
+rabbit_userid = openstack
+rabbit_password = password+1S
+
+[keystone_authtoken]
+auth_uri = http://node10:5000
+auth_url = http://node10:35357
+memcached_servers = node10:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = neutron
+password = password+1S
+
+[nova]
+auth_url = http://node10:35357
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+region_name = RegionOne
+project_name = service
+username = nova
+password = password+1S
+
+配置Modular Layer 2 (ML2)插件 
+ML2 plug-in使用Linux网橋機制为OpenStack实例建立layer-2虛擬网络设施（橋接和交換）。 
+vi /etc/neutron/plugins/ml2/ml2_conf.ini 
+[ml2]
+type_drivers = flat,vlan,vxlan
+tenant_network_types = vxlan
+mechanism_drivers = linuxbridge,l2population
+extension_drivers = port_security
+[ml2_type_flat]
+flat_networks = provider
+[ml2_type_vxlan]
+vni_ranges = 1:1000
+[securitygroup]
+enable_ipset = true
+
+su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron
+
+为计算服务配置网络访问服务 
+vi /etc/nova/nova.conf 
+[neutron]
+url = http://node10:9696
+auth_url = http://node10:35357
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+region_name = RegionOne
+project_name = service
+username = neutron
+password = password+1S
+service_metadata_proxy = True
+metadata_proxy_shared_secret = password+1S
+
+重启計算服務API和網络服務
+service nova-api restart 
+service neutron-server restart
+
+布署网络节点：Network Node
+apt-get install neutron-linuxbridge-agent neutron-l3-agent neutron-dhcp-agent neutron-metadata-agent
+配置公共服務組件
+公共組件配置包括認證機制、消息隊列
+vi /etc/neutron/neutron.conf
+ 与控制节点不同的是不需要database
+配置网桥代理 计算节点的etho
+vi /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+[linux_bridge]
+physical_interface_mappings = provider:p4p1
+
+启用VXLAN网络，配置管理网卡的物理 网络接口IP地址192.168.100.1 OVERLAY_INTERFACE_IP_ADDRESS
+[vxlan]
+enable_vxlan = True
+local_ip = 192.168.21.110   <None>
+l2_population = True
+[securitygroup]
+enable_security_group = True
+firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+配置三层
+vi /etc/neutron/l3_agent.ini
+[DEFAULT]
+interface_driver = neutron.agent.linux.interface.BridgeInterfaceDriver
+external_network_bridge =
+注：external_network_bridge值故意空缺，這样可使多個外部網络共用一個代理。
+
+vi /etc/neutron/dhcp_agent.ini
+[DEFAULT]
+interface_driver = neutron.agent.linux.interface.BridgeInterfaceDriver
+dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
+enable_isolated_metadata = True
+
+vi /etc/neutron/metadata_agent.ini
+[DEFAULT]
+nova_metadata_ip = node10
+metadata_proxy_shared_secret = password+1S
+
+service neutron-linuxbridge-agent restart
+service neutron-dhcp-agent restart
+service neutron-metadata-agent restart
+service neutron-l3-agent restart
+
+部署节点：Compute Node
+安装网络服务组件
+apt-get install neutron-linuxbridge-agent
+vi /etc/neutron/neutron.conf 
+[database]空
+[DEFAULT]
+rpc_backend = rabbit
+auth_strategy = keystone
+
+[oslo_messaging_rabbit]
+rabbit_host = node10
+rabbit_userid = openstack
+rabbit_password = password+1S
+
+[keystone_authtoken]
+auth_uri = http://node10:5000
+auth_url = http://node10:35357
+memcached_servers = node10:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = neutron
+password = password+1S
+
+vi /etc/neutron/plugins/ml2/linuxbridge_agent.ini 
+[linux_bridge]
+physical_interface_mappings = provider:p4p1
+#PROVIDER_INTERFACE_NAME
+[vxlan]
+enable_vxlan = True
+local_ip = 192.168.21.111
+l2_population = True
+ #OVERLAY_INTERFACE_IP_ADDRESS 10.0.0.31
+[securitygroup]
+enable_security_group = True
+firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+
+配置計算服務訪問網络 
+vi /etc/nova/nova.conf 
+[neutron]
+url = http://node10:9696
+auth_url = http://node10:35357
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+region_name = RegionOne
+project_name = service
+username = neutron
+password = password+1S
+
+service nova-compute restart
+service neutron-linuxbridge-agent restart
+
+检查网络服务是否安装正确
+source ~/.openstack/.admin-openrc
+
+neutron ext-list
+neutron agent-list
+
+4.6 儀表盤服务配置（Dashboard Service - Horizon）
+部署节点：Node10 Node
+apt-get install openstack-dashboard
+vi /etc/openstack-dashboard/local_settings.py 
+OPENSTACK_HOST = "node10"
+ALLOWED_HOSTS = ['*', ]
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+CACHES = {
+    'default': {
+         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+         'LOCATION': 'node10:11211',
+    }
+}
+OPENSTACK_KEYSTONE_URL = "http://%s:5000/v3" % OPENSTACK_HOST
+OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = True
+OPENSTACK_API_VERSIONS = {
+"identity": 3,
+"image": 2,
+"volume": 2,
+}
+OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = "default"
+OPENSTACK_KEYSTONE_DEFAULT_ROLE = "user"
+TIME_ZONE = "Asia/Shanghai" 
+
+service apache2 reload
+http://192.168.21.110/horizon
+
+??????????????
+在物理主機中为Dashboard外網訪問配置端口映射 
+① 利用Windows自帶的netsh配置端口映射，打開cmd命令行，輸入：
+netsh interface portproxy add v4tov4 listenport=11180 connectaddress=192.168.1.11 connectport=80
+② 在系統防火牆高級設置中配置入站規則 
+新建規則–>端口–>特定本地端口：11180–>允許連接–>選擇域/專用/公用–>名稱：VMware OpenStack Dashboard HTTP Service、描述：用於VMware中OpenStack雲計算平台Dashboard服務的Web訪問 
+③ 利用Windows自帶的netsh配置端口映射，打開cmd命令行，輸入：
+netsh interface portproxy add v4tov4 listenport=6080 connectaddress=192.168.1.11 connectport=6080
+④ 在系統防火牆高級設置中配置入站規則 
+新建規則–>端口–>特定本地端口：6080–>允許連接–>選擇域/專用/公用–>名稱：VMware OpenStack Compute Service of Nova Proxy、描述：用於VMware中OpenStack雲計算平台Nova Proxy服務的Web訪問
+??????????????
+
+4.7 塊存儲服務配置（Block Storage Service - Cinder）
+部署節點：Controller Node
+mysql -u root -p
+CREATE DATABASE cinder;
+GRANT ALL PRIVILEGES ON cinder.* TO 'cinder'@'localhost' IDENTIFIED BY 'password+1S';
+GRANT ALL PRIVILEGES ON cinder.* TO 'cinder'@'%' IDENTIFIED BY 'password+1S';
+source ~/.openstack/.admin-openrc
+openstack user create --domain default --password-prompt cinder
+openstack role add --project service --user cinder admin
+openstack service create --name cinder --description "OpenStack Block Storage" volume
+openstack service create --name cinderv2 --description "OpenStack Block Storage" volumev2
+openstack endpoint create --region RegionOne volume public http://node10:8776/v1/%\(tenant_id\)s
+openstack endpoint create --region RegionOne volume internal http://node10:8776/v1/%\(tenant_id\)s
+openstack endpoint create --region RegionOne volume admin http://node10:8776/v1/%\(tenant_id\)s
+openstack endpoint create --region RegionOne volumev2 public http://node10:8776/v2/%\(tenant_id\)s
+openstack endpoint create --region RegionOne volumev2 internal http://node10:8776/v2/%\(tenant_id\)s
+openstack endpoint create --region RegionOne volumev2 admin http://node10:8776/v2/%\(tenant_id\)s
+
+安裝和配置Cinder服務組件 
+apt-get install cinder-api cinder-scheduler
+
+
+
+
+
+
+<<<<<<<<<<<  ceph  http://anystacker.com/2013/05/devstack-and-ceph-tutorial/
+ceph auth get-or-create client.volumes | sudo tee /etc/ceph/ceph.client.volumes.keyring
+chown cinder:cinder /etc/ceph/ceph.client.volumes.keyring
+
+#uuid    <!-- uuidgen生成，这行可以没有后面加入  -->
+cat > secret.xml <<EOF
+<secret ephemeral='no' private='no'>
+  <uuid>35a74b91-0563-4537-818b-a04469125fd5</uuid>
+  <usage type='ceph'>
+    <name>client.volumes secret</name>
+  </usage>
+</secret>
+EOF
+virsh secret-define --file secret.xml
+   Secret 35a74b91-0563-4537-818b-a04469125fd5 created
+ceph auth get-key client.volumes | sudo tee client.volumes.key
+virsh secret-set-value --secret 35a74b91-0563-4537-818b-a04469125fd5 --base64 $(cat client.volumes.key) && rm client.volumes.key secret.xml
+
+
+vi /etc/cinder/cinder.conf
+
+[DEFAULT]
+rpc_backend = rabbit
+auth_strategy = keystone
+my_ip = 192.168.21.110
+
+[DEFAULT]
+...
+enabled_backends = ceph
+...
+[ceph]
+volume_driver = cinder.volume.drivers.rbd.RBDDriver
+rbd_pool = volumes
+rbd_ceph_conf = /etc/ceph/ceph.conf
+rbd_flatten_volume_from_snapshot = false
+rbd_max_clone_depth = 5
+rbd_store_chunk_size = 8
+rados_connect_timeout = -1
+glance_api_version = 2
+rbd_user = volumes
+rbd_secret_uuid = 35a74b91-0563-4537-818b-a04469125fd5
+
+>>>>>>>>>>>>>>>>>
+
+
+[database]
+connection = mysql+pymysql://cinder:password+1S@node10/cinder
+
+[oslo_messaging_rabbit]
+rabbit_host = node10
+rabbit_userid = openstack
+rabbit_password = password+1S
+
+[keystone_authtoken]
+auth_uri = http://node10:5000
+auth_url = http://node10:35357
+memcached_servers = node10:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = cinder
+password = password+1S
+
+[oslo_concurrency]
+lock_path = /var/lib/cinder/tmp
+
+su root
+su -s /bin/sh -c "cinder-manage db sync" cinder
+
+vi /etc/nova/nova.conf，添加如下信息：
+[cinder]
+os_region_name = RegionOne
+
+[libvirt]
+images_type = rbd
+images_rbd_pool = vms
+images_rbd_ceph_conf = /etc/ceph/ceph.conf
+rbd_user = cinder
+rbd_secret_uuid = c42b455d-a924-4e21-8fee-dda2e93a17b1
+disk_cachemodes="network=writeback"
+
+inject_password = false
+inject_key = false
+inject_partition = -2
+live_migration_flag="VIR_MIGRATE_UNDEFINE_SOURCE,VIR_MIGRATE_PEER2PEER,VIR_MIGRATE_LIVE,VIR_MIGRATE_PERSIST_DEST,VIR_MIGRATE_TUNNELLED"
+
+重启計算服務API和塊存儲服務
+service nova-api restart
+service cinder-scheduler restart
+service cinder-api restart
+
+cinder type-create  ceph
+cinder type-key ceph set volume_backend_name=ceph
+
+glance-control api restart 
+service cinder-volume restart 
+service cinder-backup restart
+
+service nova-compute restart 
+
+
+
+
+
+
+http://www.lai18.com/content/6218047.html 有待研究
+volume_driver=nova.volume.driver.RBDDriver
+rbd_pool=nova
+
+
+官方集成教程  
+http://fishcried.com/2016-06-28/ceph-and-openstack/
+http://docs.ceph.com/docs/master/rbd/rbd-openstack/
+
+ceph osd pool create volumes 128
+ceph osd pool create images 128
+ceph osd pool create backups 128
+ceph osd pool create vms 128
+
+apt-get install python-rbd
+apt-get install ceph-common
+ceph auth get-or-create client.cinder mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=volumes, allow rwx pool=vms, allow rx pool=images'
+ceph auth get-or-create client.glance mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=images'
+ceph auth get-or-create client.cinder-backup mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=backups'
+
+sudo ceph auth get-or-create client.glance | ssh node10 sudo tee /etc/ceph/ceph.client.glance.keyring
+ssh node10 sudo chown glance:glance /etc/ceph/ceph.client.glance.keyring
+sudo ceph auth get-or-create client.cinder | ssh node10 sudo tee /etc/ceph/ceph.client.cinder.keyring
+ssh node10 sudo chown cinder:cinder /etc/ceph/ceph.client.cinder.keyring
+sudo ceph auth get-or-create client.cinder-backup | ssh node10 sudo tee /etc/ceph/ceph.client.cinder-backup.keyring
+ssh node10 sudo chown cinder:cinder /etc/ceph/ceph.client.cinder-backup.keyring
+
+sudo ceph auth get-or-create client.cinder | ssh node11 sudo tee /etc/ceph/ceph.client.cinder.keyring
+sudo ceph auth get-key client.cinder | ssh node11 tee client.cinder.key
+
+计算节点compute nodes
+cat > secret.xml <<EOF
+<secret ephemeral='no' private='no'>
+  <uuid>c42b455d-a924-4e21-8fee-dda2e93a17b1</uuid>
+  <usage type='ceph'>
+    <name>client.cinder secret</name>
+  </usage>
+</secret>
+EOF
+virsh secret-define --file secret.xml
+Secret c42b455d-a924-4e21-8fee-dda2e93a17b1 created
+cp /var/lib/ceph/client.cinder.key ./
+ceph auth get-key client.cinder | sudo tee client.cinder.key
+sudo virsh secret-set-value --secret c42b455d-a924-4e21-8fee-dda2e93a17b1 --base64 $(cat client.cinder.key) && rm client.cinder.key secret.xml
+
+vi /etc/glance/glance-api.conf
+
+[glance_store]
+stores = rbd
+default_store = rbd
+rbd_store_pool = images
+rbd_store_user = glance
+rbd_store_ceph_conf = /etc/ceph/ceph.conf
+rbd_store_chunk_size = 8
+
+vi /etc/cinder/cinder.conf
+[DEFAULT]
+...
+enabled_backends = ceph
+...
+[ceph]
+volume_driver = cinder.volume.drivers.rbd.RBDDriver
+rbd_pool = volumes
+rbd_ceph_conf = /etc/ceph/ceph.conf
+rbd_flatten_volume_from_snapshot = false
+rbd_max_clone_depth = 5
+rbd_store_chunk_size = 4
+rados_connect_timeout = -1
+glance_api_version = 2  
+#Note that if you are configuring multiple cinder back ends, glance_api_version = 2 must be in the [DEFAULT] section.
+rbd_user = cinder
+rbd_secret_uuid = c42b455d-a924-4e21-8fee-dda2e93a17b1
+
+backup_driver = cinder.backup.drivers.ceph
+backup_ceph_conf = /etc/ceph/ceph.conf
+backup_ceph_user = cinder-backup
+backup_ceph_chunk_size = 134217728
+backup_ceph_pool = backups
+backup_ceph_stripe_unit = 0
+backup_ceph_stripe_count = 0
+restore_discard_excess_bytes = true
+
+vi /etc/nova/nova.conf
+[libvirt]
+images_type = rbd
+images_rbd_pool = vms
+images_rbd_ceph_conf = /etc/ceph/ceph.conf
+rbd_user = cinder
+rbd_secret_uuid = c42b455d-a924-4e21-8fee-dda2e93a17b1
+disk_cachemodes="network=writeback"
+
+inject_password = false
+inject_key = false
+inject_partition = -2
+
+live_migration_flag="VIR_MIGRATE_UNDEFINE_SOURCE,VIR_MIGRATE_PEER2PEER,VIR_MIGRATE_LIVE,VIR_MIGRATE_PERSIST_DEST,VIR_MIGRATE_TUNNELLED"
+
+
+glance-control api restart
+service nova-compute restart
+service cinder-volume restart
+service cinder-backup restart
+
+cinder create --image-id {id of image} --display-name {name of volume} {size of volume}
+cinder create --image-id cirros-d160722-x86_64-disk.img  --display-name wms 1G
+qemu-img convert -f qcow2 -O raw cirros-d160722-x86_64-disk.img cirros.raw
+
+
+计算服务节点compute node setup 
+apt-get install nova-novncproxy novnc nova-api nova-ajax-console-proxy nova-cert nova-conductor nova-consoleauth nova-doc nova-scheduler python-novaclient
+apt-get install nova-compute-qemu python-guestfs
