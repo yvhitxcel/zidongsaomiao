@@ -47,9 +47,22 @@ Sub begging()
     Dim intStartPage As Integer '在此配置图片页码开始值
     Dim intStoopPage As Integer '在此配置图片页码结束值
 
-    intStartPage = 1
-    intStoopPage = 204
-    FileName = "C4RX不锈钢覆面工程 VOL.3_页面_"
+    For Files = 1 To 3
+        If Files = 1 Then
+            intStartPage = 1
+            intStoopPage = 289
+            FileName = "01 C4TX给排水系统第一卷_页面_"
+        End If
+        If Files = 2 Then
+            intStartPage = 1
+            intStoopPage = 272
+            FileName = "02 C4TX给排水系统第二卷_页面_"
+        End If
+        If Files = 3 Then
+            intStartPage = 1
+            intStoopPage = 230
+            FileName = "03 C4TX给排水系统第三卷_页面_"
+        End If
     
     '初始化打印机
     'Dim pdfname, a
@@ -137,7 +150,7 @@ Sub begging()
         Next
         SingleClick  '防止进入屏保
     Next
-    
+    Next
 End Sub
 
 Sub worker() '图片处理工人
