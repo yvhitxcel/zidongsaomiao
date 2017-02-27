@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PageGeometryTemplate xmlns="http://www.enfocus.com/2009/PitStopPro_PageGeometryTemplate">
+  <Version>1</Version>
+  <Name xml:lang="en-US">单数页左侧装订</Name>
+  <Category>
+    <Name>Page Boxes</Name>
+    <Setting>
+      <Name>Layout</Name>
+      <Value>Prepress Layout</Value>
+    </Setting>
+    <Setting>
+      <Name>Trim Size</Name>
+      <Value>A4</Value>
+    </Setting>
+    <Setting>
+      <Name>Snap To Existing Trim Box</Name>
+      <Value>Off</Value>
+    </Setting>
+    <Setting>
+      <Name>Snap To Trim Marks</Name>
+      <Value>On</Value>
+      <SnapToMarksOptions>
+        <CMYK400pct>On</CMYK400pct>
+        <SeparationAll>On</SeparationAll>
+        <Black100pct>Off</Black100pct>
+        <MarksDeviationAllowed>0</MarksDeviationAllowed>
+      </SnapToMarksOptions>
+    </Setting>
+    <Setting>
+      <Name>Trim Size Position Box</Name>
+      <Value>TrimBox</Value>
+    </Setting>
+    <Setting>
+      <Name>Trim Size Anchor Point</Name>
+      <Value>LowerLeft</Value>
+    </Setting>
+    <Setting>
+      <Name>Bleed Box</Name>
+      <Value>Present</Value>
+    </Setting>
+    <Setting>
+      <Name>Same Bleed On All Sides</Name>
+      <Value>Off</Value>
+      <BoxOffsets>
+        <Left>-70.866142</Left>
+        <Right>-34.0157</Right>
+        <Top>-28.3465</Top>
+        <Bottom>-28.3465</Bottom>
+      </BoxOffsets>
+    </Setting>
+    <Setting>
+      <Name>Flip Bleed Box For Even Pages</Name>
+      <Value>On</Value>
+    </Setting>
+    <Setting>
+      <Name>Snap Bleed Box To Bleed Marks</Name>
+      <Value>On</Value>
+      <SnapToMarksOptions>
+        <CMYK400pct>On</CMYK400pct>
+        <SeparationAll>On</SeparationAll>
+        <Black100pct>Off</Black100pct>
+        <MarksDeviationAllowed>0</MarksDeviationAllowed>
+      </SnapToMarksOptions>
+    </Setting>
+    <Setting>
+      <Name>Same Media Box Offset On All Sides</Name>
+      <Value>On</Value>
+      <BoxOffsets>
+        <SameOnAllSides>0</SameOnAllSides>
+      </BoxOffsets>
+    </Setting>
+    <Setting>
+      <Name>Prepress Layout Crop Box</Name>
+      <Value>Absent</Value>
+    </Setting>
+    <Setting>
+      <Name>Prepress Layout Art Box</Name>
+      <Value>Absent</Value>
+    </Setting>
+  </Category>
+  <Category>
+    <Name>Guides</Name>
+    <Setting>
+      <Name>Guides</Name>
+      <Value>Guides</Value>
+      <Setting>
+        <Name>r--10</Name>
+        <Value>Guide</Value>
+        <Orientation>Vertical</Orientation>
+        <PageBox>MediaBox</PageBox>
+        <RelativeToGuideName></RelativeToGuideName>
+        <Edge>Right</Edge>
+        <Offset>-28.346457</Offset>
+        <FlipForEvenPages>On</FlipForEvenPages>
+        <Color>1 0 0</Color>
+      </Setting>
+      <Setting>
+        <Name>r--12</Name>
+        <Value>Guide</Value>
+        <Orientation>Vertical</Orientation>
+        <PageBox>MediaBox</PageBox>
+        <RelativeToGuideName></RelativeToGuideName>
+        <Edge>Right</Edge>
+        <Offset>-34.015748</Offset>
+        <FlipForEvenPages>On</FlipForEvenPages>
+        <Color>0 0 1</Color>
+      </Setting>
+      <Setting>
+        <Name>l-23</Name>
+        <Value>Guide</Value>
+        <Orientation>Vertical</Orientation>
+        <PageBox>MediaBox</PageBox>
+        <RelativeToGuideName></RelativeToGuideName>
+        <Edge>Left</Edge>
+        <Offset>65.19685</Offset>
+        <FlipForEvenPages>On</FlipForEvenPages>
+        <Color>1 0 0</Color>
+      </Setting>
+      <Setting>
+        <Name>l-25</Name>
+        <Value>Guide</Value>
+        <Orientation>Vertical</Orientation>
+        <PageBox>MediaBox</PageBox>
+        <RelativeToGuideName></RelativeToGuideName>
+        <Edge>Left</Edge>
+        <Offset>70.866142</Offset>
+        <FlipForEvenPages>On</FlipForEvenPages>
+        <Color>0 0 1</Color>
+      </Setting>
+      <Setting>
+        <Name>t--10</Name>
+        <Value>Guide</Value>
+        <Orientation>Horizontal</Orientation>
+        <PageBox>MediaBox</PageBox>
+        <RelativeToGuideName></RelativeToGuideName>
+        <Edge>Top</Edge>
+        <Offset>-28.346457</Offset>
+        <Color>1 0 0</Color>
+      </Setting>
+      <Setting>
+        <Name>t--12</Name>
+        <Value>Guide</Value>
+        <Orientation>Horizontal</Orientation>
+        <PageBox>MediaBox</PageBox>
+        <RelativeToGuideName></RelativeToGuideName>
+        <Edge>Top</Edge>
+        <Offset>-34.015748</Offset>
+        <Color>0 0 1</Color>
+      </Setting>
+      <Setting>
+        <Name>b-10</Name>
+        <Value>Guide</Value>
+        <Orientation>Horizontal</Orientation>
+        <PageBox>MediaBox</PageBox>
+        <RelativeToGuideName></RelativeToGuideName>
+        <Edge>Bottom</Edge>
+        <Offset>28.346457</Offset>
+        <Color>1 0 0</Color>
+      </Setting>
+      <Setting>
+        <Name>b-14</Name>
+        <Value>Guide</Value>
+        <Orientation>Horizontal</Orientation>
+        <PageBox>MediaBox</PageBox>
+        <RelativeToGuideName></RelativeToGuideName>
+        <Edge>Bottom</Edge>
+        <Offset>39.685039</Offset>
+        <Color>0 0 1</Color>
+      </Setting>
+      <Setting>
+        <Name>r-198</Name>
+        <Value>Guide</Value>
+        <Orientation>Vertical</Orientation>
+        <PageBox>MediaBox</PageBox>
+        <RelativeToGuideName></RelativeToGuideName>
+        <Edge>Right</Edge>
+        <Offset>561.259843</Offset>
+        <FlipForEvenPages>On</FlipForEvenPages>
+        <Color>0 0 1</Color>
+      </Setting>
+    </Setting>
+  </Category>
+  <Category>
+    <Name>Zones</Name>
+    <Setting>
+      <Name>Zones</Name>
+      <Value>Zones</Value>
+    </Setting>
+  </Category>
+  <Category>
+    <Name>Actions</Name>
+    <Setting>
+      <Name>Actions</Name>
+      <Value>Actions</Value>
+    </Setting>
+    <Setting>
+      <Name>ReportGeneration</Name>
+      <Value>Never</Value>
+    </Setting>
+  </Category>
+</PageGeometryTemplate>
