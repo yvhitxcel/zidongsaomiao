@@ -1,22 +1,21 @@
-Attribute VB_Name = "NewMacros"
 Option Explicit
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'°æ±¾£º1.0.4
-'×÷Õß£ºÌÆº£ÓÂ
-' Q Q£º2338953
-'ÓÊÏä£ºyvhitxcel@tom.com
-'Î¢ĞÅ£º2338953
-'ÍøÖ·£ºhttp://github.com/yvhitxcel/zidongsaomiao
-'Ğ­Òé£ºGNU GENERAL PUBLIC LICENSE Version 3.0
+'ç‰ˆæœ¬ï¼š1.0.4
+'ä½œè€…ï¼šå”æµ·å‹‡
+' Q Qï¼š2338953
+'é‚®ç®±ï¼šyvhitxcel@tom.com
+'å¾®ä¿¡ï¼š2338953
+'ç½‘å€ï¼šhttp://github.com/yvhitxcel/zidongsaomiao
+'åè®®ï¼šGNU GENERAL PUBLIC LICENSE Version 3.0
 '
-'ËµÃ÷£º¿ª·¢Ô´×ÔÓÚÊµ¼Ê¹¤×÷£¬ÏîÄ¿ĞèÒª´¦Àí´óÁ¿PDFÎÄ¼ş£¬ÎÄ¼şÓÉÉ¨ÃèÒÇÅúÁ¿É¨ÃèÉú³É£¬ _
-'       ÓÉÓÚÔ­Ê¼ÎÄ¼şÀ´Ô´·Ç³£¹ã·º£¬¸÷ÖÖ¿í¶ÈÔÓ£¬ÁíÍâÉ¨ÃèÒÇÉ¨ÃèÊ±Ò²µ¼ÖÂÎÄ¼şµÄÆ«Ğ±£¬ _
-'       µ¼ÖÂÄ¿Ç°µÄ¹¤×÷½ø¶È»ºÂı£¬´ËÇ°Ò»Ö±ÓÉÈË¹¤µÄ°ì·¨£¬¶ÔÎÄ¼ş½øĞĞÖğÒ³ĞŞ¸Ä£¬ÈË¾ù _
-'       Ã¿Ìì´¦ÀíÁ¿Ô¼Îª150Ò³£¬ÏîÄ¿½ØÖ¹µ½Ä¿Ç°´óÔ¼»¹ÓĞ½ü50ÍòÒ³ÎÄ¼ş´ı´¦Àí£¬ÈÎÎñ·Ç³£¼è¾Ş¡£
-'Ë¼Â·£ºÏÈ°ÑpdfÎÄ¼şÁí´æÎªjpegÎÄ¼ş¸ñÊ½£¬È»ºóÀûÓÃwordºêÓïÑÔ£¬¶¯Ì¬¼ÓÔØÍ¼Æ¬µ½WORDÎÄµµ _
-'       ¾­¹ıÆÁÄ»È¡É«º¯ÊıÅĞ¶ÏÎÄ¼ş±ß¿òËùÔÚÎ»ÖÃ£¬½ø¶øÒÀ¾İ´ËÊı¾İ½øĞĞ£¬Ëõ·Å£¬Ğı×ª£¬Æ½ _
-'       ÒÆ²Ù×÷,´ïµ½Ó¡Ë¢¹¤Òµ±ê×¼ĞèÇó¡£
+'è¯´æ˜ï¼šå¼€å‘æºè‡ªäºå®é™…å·¥ä½œï¼Œé¡¹ç›®éœ€è¦å¤„ç†å¤§é‡PDFæ–‡ä»¶ï¼Œæ–‡ä»¶ç”±æ‰«æä»ªæ‰¹é‡æ‰«æç”Ÿæˆï¼Œ _
+'       ç”±äºåŸå§‹æ–‡ä»¶æ¥æºéå¸¸å¹¿æ³›ï¼Œå„ç§å®½åº¦æ‚ï¼Œå¦å¤–æ‰«æä»ªæ‰«ææ—¶ä¹Ÿå¯¼è‡´æ–‡ä»¶çš„åæ–œï¼Œ _
+'       å¯¼è‡´ç›®å‰çš„å·¥ä½œè¿›åº¦ç¼“æ…¢ï¼Œæ­¤å‰ä¸€ç›´ç”±äººå·¥çš„åŠæ³•ï¼Œå¯¹æ–‡ä»¶è¿›è¡Œé€é¡µä¿®æ”¹ï¼Œäººå‡ _
+'       æ¯å¤©å¤„ç†é‡çº¦ä¸º150é¡µï¼Œé¡¹ç›®æˆªæ­¢åˆ°ç›®å‰å¤§çº¦è¿˜æœ‰è¿‘50ä¸‡é¡µæ–‡ä»¶å¾…å¤„ç†ï¼Œä»»åŠ¡éå¸¸è‰°å·¨ã€‚
+'æ€è·¯ï¼šå…ˆæŠŠpdfæ–‡ä»¶å¦å­˜ä¸ºjpegæ–‡ä»¶æ ¼å¼ï¼Œç„¶ååˆ©ç”¨wordå®è¯­è¨€ï¼ŒåŠ¨æ€åŠ è½½å›¾ç‰‡åˆ°WORDæ–‡æ¡£ _
+'       ç»è¿‡å±å¹•å–è‰²å‡½æ•°åˆ¤æ–­æ–‡ä»¶è¾¹æ¡†æ‰€åœ¨ä½ç½®ï¼Œè¿›è€Œä¾æ®æ­¤æ•°æ®è¿›è¡Œï¼Œç¼©æ”¾ï¼Œæ—‹è½¬ï¼Œå¹³ _
+'       ç§»æ“ä½œ,è¾¾åˆ°å°åˆ·å·¥ä¸šæ ‡å‡†éœ€æ±‚ã€‚
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 Private Declare Function GetPixel Lib "gdi32" (ByVal hdc As Long, ByVal x As Long, ByVal Y As Long) As Long
@@ -25,12 +24,12 @@ Private Declare Function GetWindowDC Lib "user32" (ByVal hwnd As Long) As Long
 Private Declare Function GetDC Lib "user32" (ByVal hwnd As Long) As Long
 Private Declare Function CancelDC Lib "gdi32" (ByVal hdc As Long) As Long
 Private Declare Function FindWindow Lib "user32" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As Long
-Public Declare Function SetCursorPos Lib "user32" (ByVal x As Long, ByVal Y As Long) As Long
-Public Declare Sub mouse_event Lib "user32" (ByVal dwFlags As Long, ByVal dx As Long, ByVal dy As Long, ByVal cButtons As Long, ByVal dwExtraInfo As Long)
-Public Const MOUSEEVENTF_LEFTDOWN = &H2
-Public Const MOUSEEVENTF_LEFTUP = &H4
-Public Const MOUSEEVENTF_RIGHTDOWN As Long = &H8
-Public Const MOUSEEVENTF_RIGHTUP As Long = &H10
+Private Declare Function SetCursorPos Lib "user32" (ByVal x As Long, ByVal Y As Long) As Long
+Private Declare Sub mouse_event Lib "user32" (ByVal dwFlags As Long, ByVal dx As Long, ByVal dy As Long, ByVal cButtons As Long, ByVal dwExtraInfo As Long)
+Private Const MOUSEEVENTF_LEFTDOWN = &H2
+Private Const MOUSEEVENTF_LEFTUP = &H4
+Private Const MOUSEEVENTF_RIGHTDOWN As Long = &H8
+Private Const MOUSEEVENTF_RIGHTUP As Long = &H10
 Private Type POINT
     x As Long
     Y As Long
@@ -38,33 +37,33 @@ End Type
 Dim worknum As Integer
 
 Sub begging()
-    Dim i As Integer
-    Dim strFilename As String   'Í¼Æ¬¹æÔòÎª "xxx_Ò³Ãæ_xxx.jpg",µ±PDFÎÄ¼şÁí´æÎªjpegÊ±¿É×Ô¶¯Éú³É
-    Dim FileName As String      'ÎÄ¼şÃûÇ°×º "xxx_Ò³Ãæ_"
+    Dim i As Integer, Files As Integer
+    Dim strFilename As String   'å›¾ç‰‡è§„åˆ™ä¸º "xxx_é¡µé¢_xxx.jpg",å½“PDFæ–‡ä»¶å¦å­˜ä¸ºjpegæ—¶å¯è‡ªåŠ¨ç”Ÿæˆ
+    Dim FileName As String      'æ–‡ä»¶åå‰ç¼€ "xxx_é¡µé¢_"
     Dim strFilenameSave As String
     Dim im As shape, imm As InlineShape
     Dim strMulu As String
-    Dim intStartPage As Integer 'ÔÚ´ËÅäÖÃÍ¼Æ¬Ò³Âë¿ªÊ¼Öµ
-    Dim intStoopPage As Integer 'ÔÚ´ËÅäÖÃÍ¼Æ¬Ò³Âë½áÊøÖµ
+    Dim intStartPage As Integer 'åœ¨æ­¤é…ç½®å›¾ç‰‡é¡µç å¼€å§‹å€¼
+    Dim intStoopPage As Integer 'åœ¨æ­¤é…ç½®å›¾ç‰‡é¡µç ç»“æŸå€¼
 
     For Files = 1 To 3
         If Files = 1 Then
             intStartPage = 1
             intStoopPage = 289
-            FileName = "01 C4TX¸øÅÅË®ÏµÍ³µÚÒ»¾í_Ò³Ãæ_"
+            FileName = "01 C4TXç»™æ’æ°´ç³»ç»Ÿç¬¬ä¸€å·_é¡µé¢_"
         End If
         If Files = 2 Then
             intStartPage = 1
             intStoopPage = 272
-            FileName = "02 C4TX¸øÅÅË®ÏµÍ³µÚ¶ş¾í_Ò³Ãæ_"
+            FileName = "02 C4TXç»™æ’æ°´ç³»ç»Ÿç¬¬äºŒå·_é¡µé¢_"
         End If
         If Files = 3 Then
             intStartPage = 1
             intStoopPage = 230
-            FileName = "03 C4TX¸øÅÅË®ÏµÍ³µÚÈı¾í_Ò³Ãæ_"
+            FileName = "03 C4TXç»™æ’æ°´ç³»ç»Ÿç¬¬ä¸‰å·_é¡µé¢_"
         End If
     
-    '³õÊ¼»¯´òÓ¡»ú
+    'åˆå§‹åŒ–æ‰“å°æœº
     'Dim pdfname, a
     'Dim pmkr As AdobePDFMakerForOffice.PDFMaker
     'Dim stng As AdobePDFMakerForOffice.ISettings
@@ -88,44 +87,44 @@ Sub begging()
     'stng.ViewPDFFile = False
     'stng.SetConversionRange stng
 
-    strMulu = "D:\zidongsaomiao"  '¹¤×÷Ä¿Â¼£¬Ä¿Â¼ÏÂÓĞinput outputÁ½¸öÎÄ¼ş¼Ğ
-                                  ' inputÄÚÎªÔ­Ê¼Í¼Æ¬
-                                  'outputÎªÊä³öÎÄ¼ş¼Ğ
+    strMulu = "D:\zidongsaomiao"  'å·¥ä½œç›®å½•ï¼Œç›®å½•ä¸‹æœ‰input outputä¸¤ä¸ªæ–‡ä»¶å¤¹
+                                  ' inputå†…ä¸ºåŸå§‹å›¾ç‰‡
+                                  'outputä¸ºè¾“å‡ºæ–‡ä»¶å¤¹
     For i = intStartPage To intStoopPage
         strFilename = FileName
         If (i < 10) Then strFilename = strFilename & "00" & i
         If (i > 9 And i < 100) Then strFilename = strFilename & "0" & i
         If (i > 99) Then strFilename = strFilename & i
-        strFilenameSave = strFilename & ".pdf"      '´¦ÀíÍê³ÉºóÁí´æÎªPDF¸ñÊ½
-        strFilename = strFilename & ".jpg"          '³õÊ¼ÎÄ¼şÃû
+        strFilenameSave = strFilename & ".pdf"      'å¤„ç†å®Œæˆåå¦å­˜ä¸ºPDFæ ¼å¼
+        strFilename = strFilename & ".jpg"          'åˆå§‹æ–‡ä»¶å
         
-        '´ò¿ªĞèÒª´¦ÀíµÄÎÄ¼ş  'ÔİÍ£Ê±¼äĞèÒª³¤´ï3Ãë
+        'æ‰“å¼€éœ€è¦å¤„ç†çš„æ–‡ä»¶  'æš‚åœæ—¶é—´éœ€è¦é•¿è¾¾3ç§’
         'Selection.InlineShapes.AddPicture FileName:= _
             strMulu & "\input\" & strFilename _
             , LinkToFile:=False, SaveWithDocument:=True
         'For Each imm In ActiveDocument.InlineShapes
         '    Events 1
-        '    imm.ConvertToShape 'Í¼Æ¬²åÈëÊ±ÎªÇ¶ÈëĞÍ£¬ĞŞ¸Ä³É¸¡ÓÚÎÄ¼şÉÏ·½£¬ÕâÑù²ÅÒÆ¶¯Ğı×ª¡£
+        '    imm.ConvertToShape 'å›¾ç‰‡æ’å…¥æ—¶ä¸ºåµŒå…¥å‹ï¼Œä¿®æ”¹æˆæµ®äºæ–‡ä»¶ä¸Šæ–¹ï¼Œè¿™æ ·æ‰ç§»åŠ¨æ—‹è½¬ã€‚
         '    Events 2
         'Next
         
-        'ÒÔshapes·½Ê½Ö±½Ó¼ÓÔØÍ¼Æ¬£¬¿É½ÚÔ¼Í¼Æ¬×ª»»Ëù»¨Ê±¼ä
+        'ä»¥shapesæ–¹å¼ç›´æ¥åŠ è½½å›¾ç‰‡ï¼Œå¯èŠ‚çº¦å›¾ç‰‡è½¬æ¢æ‰€èŠ±æ—¶é—´
         Selection.InlineShapes.AddPicture FileName:= _
             strMulu & "\297-1.png" _
-            , LinkToFile:=False, SaveWithDocument:=True  '´ò¿ªÒ»¸ö297mm*1mm¹æ¸ñ¿Õ°×pngÍ¼Æ¬£¬´ÙÊ¹Ò³ÃæÍ£¿¿ÔÚ´°¿Úµ×¶Ë
-        Events 0.3    'µÈ´ıÎÄ¼şÍ£¿¿µ½´°¿Ú×îµ×¶Ë
+            , LinkToFile:=False, SaveWithDocument:=True  'æ‰“å¼€ä¸€ä¸ª297mm*1mmè§„æ ¼ç©ºç™½pngå›¾ç‰‡ï¼Œä¿ƒä½¿é¡µé¢åœé åœ¨çª—å£åº•ç«¯
+        Events 0.3    'ç­‰å¾…æ–‡ä»¶åœé åˆ°çª—å£æœ€åº•ç«¯
        
         ActiveDocument.Shapes.AddPicture FileName:= _
             strMulu & "\input\" & strFilename _
             , LinkToFile:=False, SaveWithDocument:=True
-        Events 1      'µÈ´ıÍ¼Æ¬¼ÓÔØÍê³É
+        Events 1      'ç­‰å¾…å›¾ç‰‡åŠ è½½å®Œæˆ
 
-        worknum = 0   'ÖØ¸´ÔËĞĞworker£¬²»ĞèÒªÔİÍ£
-        worker        '½øÈë¼Ó¹¤Á÷³Ì
+        worknum = 0   'é‡å¤è¿è¡Œworkerï¼Œä¸éœ€è¦æš‚åœ
+        worker        'è¿›å…¥åŠ å·¥æµç¨‹
         worker
         worker
 
-        '´òÓ¡µ½PDF
+        'æ‰“å°åˆ°PDF
         'If Not ActiveDocument.Saved Then
         '    ActiveDocument.Save
         'End If
@@ -134,7 +133,7 @@ Sub begging()
         'stng.OutputPDFFileName = strMulu & "\output\" & strFilenameSave
         'pmkr.CreatePDFEx stng, 0
         
-        'Áí´æÎªPDFÎÄ¼ş
+        'å¦å­˜ä¸ºPDFæ–‡ä»¶
         ActiveDocument.ExportAsFixedFormat OutputFileName:= _
             strMulu & "\output\" & strFilenameSave, ExportFormat:=wdExportFormatPDF, _
             OpenAfterExport:=False, OptimizeFor:=wdExportOptimizeForPrint, Range:= _
@@ -143,17 +142,17 @@ Sub begging()
             wdExportCreateNoBookmarks, DocStructureTags:=True, BitmapMissingFonts:= _
             False, UseISO19005_1:=False
         For Each im In ActiveDocument.Shapes
-            im.Delete   'É¾³ıËùÓĞÍ¼Æ¬
+            im.Delete   'åˆ é™¤æ‰€æœ‰å›¾ç‰‡
         Next
         For Each imm In ActiveDocument.InlineShapes
-            imm.Delete  'É¾³ıËùÓĞÍ¼Æ¬
+            imm.Delete  'åˆ é™¤æ‰€æœ‰å›¾ç‰‡
         Next
-        SingleClick  '·ÀÖ¹½øÈëÆÁ±£
+        SingleClick  'é˜²æ­¢è¿›å…¥å±ä¿
     Next
     Next
 End Sub
 
-Sub worker() 'Í¼Æ¬´¦Àí¹¤ÈË
+Sub worker() 'å›¾ç‰‡å¤„ç†å·¥äºº
     Dim Xtmp As Integer, boolX As Integer
     Dim j As Integer
     Dim H As Long
@@ -163,49 +162,49 @@ Sub worker() 'Í¼Æ¬´¦Àí¹¤ÈË
     Dim bili As Double
     Dim X2 As Integer, X1 As Integer
     Dim Y2 As Integer, Y1 As Integer, Yn As Integer
-    Dim L1 As Integer, R1 As Integer  '×î¼ÑÎ»ÖÃ×óÓÒ±ß¾à
+    Dim L1 As Integer, R1 As Integer  'æœ€ä½³ä½ç½®å·¦å³è¾¹è·
     Dim lngCor As Long
-    Dim n As Integer       'Å¼¶û»áÓĞÒòÑÓÊ±²»¹»µ¼ÖÂÈ¡²»µ½±ß¿òµÄÇé¿ö£¬ÖØ¸´Èı´Î
-    Dim Hight As Long, Width As Long  'Ò³¸ßÓë¿í
-    Dim LeftDoc As Long, RightDoc As Long  'ÎÄ¼ş×î×óÎ»ÖÃ£¬×îÓÒÎ»ÖÃ
+    Dim n As Integer       'å¶å°”ä¼šæœ‰å› å»¶æ—¶ä¸å¤Ÿå¯¼è‡´å–ä¸åˆ°è¾¹æ¡†çš„æƒ…å†µï¼Œé‡å¤ä¸‰æ¬¡
+    Dim Hight As Long, Width As Long  'é¡µé«˜ä¸å®½
+    Dim LeftDoc As Long, RightDoc As Long  'æ–‡ä»¶æœ€å·¦ä½ç½®ï¼Œæœ€å³ä½ç½®
     Dim TopWordpage As Long, BootWordpage As Long
 
     lDC = GetWindowDC(0)
-    'Ò³ÃæÄ¬ÈÏÏÔÊ¾ÏÂ°ë¶Ë
+    'é¡µé¢é»˜è®¤æ˜¾ç¤ºä¸‹åŠç«¯
     Dim lngHorizontal As Long
     Dim lngVertical As Long
-    lngHorizontal = System.HorizontalResolution        '1280 ·Ö±æÂÊ¿í
-    lngVertical = System.VerticalResolution            '800  ·Ö±æÂÊ¸ß
-    TopWordpage = 160   '´ò¿ªWORDÊ±£¬ÄÚÈİÇøÒÔÉÏ²¿·ÖµÄÏñËØÎª160
-    BootWordpage = 50   '´ò¿ªWORDÊ±£¬ÄÚÈİÇøÒÔÏÂ²¿·ÖµÄÏñËØÎª51
+    lngHorizontal = System.HorizontalResolution        '1280 åˆ†è¾¨ç‡å®½
+    lngVertical = System.VerticalResolution            '800  åˆ†è¾¨ç‡é«˜
+    TopWordpage = 160   'æ‰“å¼€WORDæ—¶ï¼Œå†…å®¹åŒºä»¥ä¸Šéƒ¨åˆ†çš„åƒç´ ä¸º160
+    BootWordpage = 50   'æ‰“å¼€WORDæ—¶ï¼Œå†…å®¹åŒºä»¥ä¸‹éƒ¨åˆ†çš„åƒç´ ä¸º51
 
     Hight = PointsToPixels(MillimetersToPoints(297))   '1122
     Width = PointsToPixels(MillimetersToPoints(210))   '793
-    LeftDoc = (lngHorizontal - 17 - Width) / 2         '235  '²»ÏÔÊ¾±ê³ßµÄÇé¿öÏÂ
+    LeftDoc = (lngHorizontal - 17 - Width) / 2         '235  'ä¸æ˜¾ç¤ºæ ‡å°ºçš„æƒ…å†µä¸‹
     RightDoc = lngHorizontal - 17 - LeftDoc            '1040
     n = 0
     While (X2 = 0 And n <= 2)
-        Yarea1 = TopWordpage + 5  'Ò³ÃæÏÔÊ¾ÏÂ°ë¶ËÊ±£¬ÎÄ¼ş×îÉÏ¶ËÔÚÆÁÄ»ÉÏµÄY³éÎ»ÖÃ
-        Yarea2 = lngVertical - BootWordpage - 20 - 5    'Ò³ÃæÏÔÊ¾ÏÂ°ë¶ËÊ±£¬ÎÄ¼ş×îÏÂ¶ËÔÚÆÁÄ»ÉÏµÄY³éÎ»ÖÃ
-        Xarea1 = LeftDoc + 5    'Ò³ÃæÏÔÊ¾ÏÂ°ë¶ËÊ±£¬ÎÄ¼ş×î×ó¶ËÔÚÆÁÄ»ÉÏµÄX³éÎ»ÖÃ
-        Xarea2 = Xarea1 + 180    'Ò³ÃæÏÔÊ¾ÏÂ°ë¶ËÊ±£¬¹ÀËã¼áÏßµÄË®Æ½Î»ÖÃÇø¼äĞ¡ÓÚ×î×ó¾àÀë+180
+        Yarea1 = TopWordpage + 5  'é¡µé¢æ˜¾ç¤ºä¸‹åŠç«¯æ—¶ï¼Œæ–‡ä»¶æœ€ä¸Šç«¯åœ¨å±å¹•ä¸Šçš„YæŠ½ä½ç½®
+        Yarea2 = lngVertical - BootWordpage - 20 - 5    'é¡µé¢æ˜¾ç¤ºä¸‹åŠç«¯æ—¶ï¼Œæ–‡ä»¶æœ€ä¸‹ç«¯åœ¨å±å¹•ä¸Šçš„YæŠ½ä½ç½®
+        Xarea1 = LeftDoc + 5    'é¡µé¢æ˜¾ç¤ºä¸‹åŠç«¯æ—¶ï¼Œæ–‡ä»¶æœ€å·¦ç«¯åœ¨å±å¹•ä¸Šçš„XæŠ½ä½ç½®
+        Xarea2 = Xarea1 + 180    'é¡µé¢æ˜¾ç¤ºä¸‹åŠç«¯æ—¶ï¼Œä¼°ç®—åšçº¿çš„æ°´å¹³ä½ç½®åŒºé—´å°äºæœ€å·¦è·ç¦»+180
         Xtmp = 0
         X2 = 0
 
-        While CInt(Yarea1 + 0.5) < Int(Yarea2) '´¹Ö±·½ÏòÊ¹ÓÃ¶ş·Ö·¨¼ÓËÙ²éÕÒ±ß¿ò¶ËµãËùÔÚÎ»ÖÃ
+        While CInt(Yarea1 + 0.5) < Int(Yarea2) 'å‚ç›´æ–¹å‘ä½¿ç”¨äºŒåˆ†æ³•åŠ é€ŸæŸ¥æ‰¾è¾¹æ¡†ç«¯ç‚¹æ‰€åœ¨ä½ç½®
             Mnub = (Yarea1 + Yarea2) / 2
             boolX = 0
-            For x = Xarea1 To Xarea2   'Ë®Æ½X³é·½ÏòÖ±½Ó´Ó×óÏòÖğµã²éÕÒ±ß¿òËùÔÚÎ»ÖÃ
+            For x = Xarea1 To Xarea2   'æ°´å¹³XæŠ½æ–¹å‘ç›´æ¥ä»å·¦å‘é€ç‚¹æŸ¥æ‰¾è¾¹æ¡†æ‰€åœ¨ä½ç½®
                 lngCor = GetPixel(lDC, x, Mnub)
                 RGBtoH lngCor, H
-                If H < 180 Then
-                    X2 = Xtmp        'Ç°¼¸´ÎµÃµ½µÄ±ß¾àÏàÍ¬£¬×îºóÒ»¸öÒòÍ¼Æ¬Ä£ºı£¬µ¼ÖÂÊıÖµÍ»±ä
+                If H < 190 Then
+                    X2 = Xtmp        'å‰å‡ æ¬¡å¾—åˆ°çš„è¾¹è·ç›¸åŒï¼Œæœ€åä¸€ä¸ªå› å›¾ç‰‡æ¨¡ç³Šï¼Œå¯¼è‡´æ•°å€¼çªå˜
                     If (Xtmp > x + 1) Then
                         Mnub = Int(Yarea1) + 1
                     Else
-                        Xarea1 = x - 10  '¼õÉÙX³éÇø¼ä£¬¼Ó¿ì²éÕÒËÙ¶È¡£
+                        Xarea1 = x - 10  'å‡å°‘XæŠ½åŒºé—´ï¼ŒåŠ å¿«æŸ¥æ‰¾é€Ÿåº¦ã€‚
                         Xarea2 = x + 10
-                        Xtmp = x         'Òò´ËÔö¼ÓÁË¶ÔÉÏÒ»´Î½á¹ûµÄ»º´æ£¬²»²ÉÓÃ×îºóÒ»´Î½á¹û¡£
+                        Xtmp = x         'å› æ­¤å¢åŠ äº†å¯¹ä¸Šä¸€æ¬¡ç»“æœçš„ç¼“å­˜ï¼Œä¸é‡‡ç”¨æœ€åä¸€æ¬¡ç»“æœã€‚
                     End If
                     If (X2 = 0) Then X2 = Xtmp
                     boolX = x
@@ -213,18 +212,18 @@ Sub worker() 'Í¼Æ¬´¦Àí¹¤ÈË
                 End If
             Next x
             If boolX > 0 Then
-                Yarea1 = Mnub       '´Ë´¦£¬µ±ÎÄ¼şÏÔÊ¾ÏÂ°ë¶Ë»òÏÔÊ¾ÉÏ°ë¶ËÊ± ²»Í¬
+                Yarea1 = Mnub       'æ­¤å¤„ï¼Œå½“æ–‡ä»¶æ˜¾ç¤ºä¸‹åŠç«¯æˆ–æ˜¾ç¤ºä¸ŠåŠç«¯æ—¶ ä¸åŒ
             Else
                 Yarea2 = Mnub
             End If
         Wend
         X2 = X2
-        Y2 = (lngVertical - BootWordpage - 20) - Int(Yarea1)  'Ò³ÃæÏÔÊ¾ÏÂ°ë¶ËÊ±£¬±ß¿ò×îµ×¶Ëµ½ÎÄ¼ş×îµ×¶ËµÄ¾àÀë,ÎÄ¼ş×îµÍ¶ËÔÚÆÁÄ»ÉÏµÄY³éÎ»ÖÃ
+        Y2 = (lngVertical - BootWordpage - 20) - Int(Yarea1)  'é¡µé¢æ˜¾ç¤ºä¸‹åŠç«¯æ—¶ï¼Œè¾¹æ¡†æœ€åº•ç«¯åˆ°æ–‡ä»¶æœ€åº•ç«¯çš„è·ç¦»,æ–‡ä»¶æœ€ä½ç«¯åœ¨å±å¹•ä¸Šçš„YæŠ½ä½ç½®
         n = n + 1
         If (X2 = 0) Then Events 1
     Wend
     
-    'Í¨¹ıÏÂÃæÃüÁî¿ÉÊ¹Ò³ÃæÏÔÊ¾ÉÏ°ë¶Ë
+    'é€šè¿‡ä¸‹é¢å‘½ä»¤å¯ä½¿é¡µé¢æ˜¾ç¤ºä¸ŠåŠç«¯
     If (worknum = 0) Then
         Application.ActiveWindow.Selection.GoTo wdGoToPage, wdGoToNext, , 1
         Events 1
@@ -232,8 +231,8 @@ Sub worker() 'Í¼Æ¬´¦Àí¹¤ÈË
 
     n = 0
     While (X1 = 0 And n <= 2)
-        Yarea1 = TopWordpage + 16 + 5    'Ò³ÃæÏÔÊ¾ÉÏ°ë¶ËÊ±£¬ÎÄ¼ş×îÉÏ¶ËÔÚÆÁÄ»ÉÏµÄY³éÎ»ÖÃ
-        Yarea2 = lngVertical - BootWordpage - 5    'Ò³ÃæÏÔÊ¾ÉÏ°ë¶ËÊ±£¬ÎÄ¼ş×îÏÂ¶ËÔÚÆÁÄ»ÉÏµÄY³éÎ»ÖÃ
+        Yarea1 = TopWordpage + 16 + 5    'é¡µé¢æ˜¾ç¤ºä¸ŠåŠç«¯æ—¶ï¼Œæ–‡ä»¶æœ€ä¸Šç«¯åœ¨å±å¹•ä¸Šçš„YæŠ½ä½ç½®
+        Yarea2 = lngVertical - BootWordpage - 5    'é¡µé¢æ˜¾ç¤ºä¸ŠåŠç«¯æ—¶ï¼Œæ–‡ä»¶æœ€ä¸‹ç«¯åœ¨å±å¹•ä¸Šçš„YæŠ½ä½ç½®
         Xtmp = 0
         X1 = 0
         While Int(Yarea1) < Int(Yarea2 - 0.5)
@@ -242,7 +241,7 @@ Sub worker() 'Í¼Æ¬´¦Àí¹¤ÈË
             For x = Xarea1 To Xarea2
                 lngCor = GetPixel(lDC, x, Mnub)
                 RGBtoH lngCor, H
-                If H < 180 Then
+                If H < 190 Then
                     X1 = Xtmp
                     If (Xtmp < x And Xtmp > 0) Then
                         Mnub = Int(Yarea2) - 1
@@ -263,47 +262,47 @@ Sub worker() 'Í¼Æ¬´¦Àí¹¤ÈË
             End If
         Wend
         X1 = X1
-        Y1 = CInt(Yarea2 + 0.5) - (TopWordpage + 16)   '±ß¿ò×î¶¥¶Ëµ½ÎÄ¼ş×î¶¥¶ËµÄ¾àÀë,ÎÄ¼ş×î¶¥¶ËÔÚÆÁÄ»ÉÏµÄÎ»ÖÃÊÇ200
-        If (Yarea2 < 550) Then Yn = 650 Else Yn = Int(Yarea2) + 100        '±ß¿ò×î¶¥¶ËÏòÏÂ100px,ÒÔ´ËÎ»ÖÃÈ¡×î×óµ½×î×îÓÒÎ»ÖÃ£¬ÅĞ¶ÏËõ·ÅÓëÒÆ¶¯
+        Y1 = CInt(Yarea2 + 0.5) - (TopWordpage + 16)   'è¾¹æ¡†æœ€é¡¶ç«¯åˆ°æ–‡ä»¶æœ€é¡¶ç«¯çš„è·ç¦»,æ–‡ä»¶æœ€é¡¶ç«¯åœ¨å±å¹•ä¸Šçš„ä½ç½®æ˜¯200
+        If (Yarea2 < 550) Then Yn = 650 Else Yn = Int(Yarea2) + 100        'è¾¹æ¡†æœ€é¡¶ç«¯å‘ä¸‹100px,ä»¥æ­¤ä½ç½®å–æœ€å·¦åˆ°æœ€æœ€å³ä½ç½®ï¼Œåˆ¤æ–­ç¼©æ”¾ä¸ç§»åŠ¨
         n = n + 1
     Wend
     
     bili = 1
     dushu = 0
     If (X1 > 0 And X2 > 0 And Y1 > 0 And Y2 > 0) Then
-        dushu = Atn((X2 - X1) / (Hight - Y2 - Y1)) * 180 / 3.1415926 'ÎÄ¼şÄÚÈİ¸ß¶È ÒÑÖªÖ±½ÇÈı½ÇĞÎµÄÁ½´¹Ö±±ßµÄ³¤¶È£¬Çó½Ç¶È¹«Ê½  ½Ç¶È*180/pi
+        dushu = Atn((X2 - X1) / (Hight - Y2 - Y1)) * 180 / 3.1415926 'æ–‡ä»¶å†…å®¹é«˜åº¦ å·²çŸ¥ç›´è§’ä¸‰è§’å½¢çš„ä¸¤å‚ç›´è¾¹çš„é•¿åº¦ï¼Œæ±‚è§’åº¦å…¬å¼  è§’åº¦*180/pi
 
-        For j = (RightDoc - 5) To (RightDoc - 5 - 300) Step -1      '´ÓÓÒÏò×ó²éÕÒÓÒ±ß¿òÎ»ÖÃ
+        For j = (RightDoc - 5) To (RightDoc - 5 - 300) Step -1      'ä»å³å‘å·¦æŸ¥æ‰¾å³è¾¹æ¡†ä½ç½®
             lngCor = GetPixel(lDC, j, Yn)
             RGBtoH lngCor, H
-            If H < 180 Then
-                R1 = j                       'µÃµ½ÓÒ±ß¿òË®Æ½Î»ÖÃ
+            If H < 190 Then
+                R1 = j                       'å¾—åˆ°å³è¾¹æ¡†æ°´å¹³ä½ç½®
                 Exit For
             End If
         Next
 
         If (R1 > 0 And X1 > 0) Then
-            bili = PointsToPixels(MillimetersToPoints(176)) / (R1 - X1) 'ÎÄ¼ş×óÓÒ±ß¿òÒªÇóµÄ¿í¶ÈÎª(210-23-11=176)
+            bili = PointsToPixels(MillimetersToPoints(176)) / (R1 - X1) 'æ–‡ä»¶å·¦å³è¾¹æ¡†è¦æ±‚çš„å®½åº¦ä¸º(210-23-11=176)
             If (Abs(bili) > 1.2 Or Abs(bili) < 0.8) Then bili = 1
         End If
         With ActiveDocument.Shapes(1)
             If (dushu <> 0 And Abs(dushu) < 1 And worknum = 0) Then
-                .IncrementRotation dushu                            'ÕıÊıX2>X1 Ë³Ê±Õë×ª ÏòÓÒ
+                .IncrementRotation dushu                            'æ­£æ•°X2>X1 é¡ºæ—¶é’ˆè½¬ å‘å³
             End If
             If (Abs(.Left) < 300) Then Xleft = .Left Else Xleft = 0
             .Left = ((LeftDoc + PointsToPixels(MillimetersToPoints(23))) - (((X1 + X2) / 2) - Xleft)) * bili
-            'ÊµÊ©ÒÆ¶¯²Ù×÷ ×ó±ß¿òÒªÇóµÄÎ»ÖÃ
+            'å®æ–½ç§»åŠ¨æ“ä½œ å·¦è¾¹æ¡†è¦æ±‚çš„ä½ç½®
             If (bili <> 1) Then
-                .ScaleWidth bili, False                             'ÉèÖÃ¸ß¶È
-                '.ScaleHeight bili, False                            'ÉèÖÃ¿í¶È
+                .ScaleWidth bili, False                             'è®¾ç½®é«˜åº¦
+                '.ScaleHeight bili, False                            'è®¾ç½®å®½åº¦
             End If
         End With
-        If (worknum = 0) Then Events 1                              'nÃëºó½øĞĞ±£´æ²Ù×÷
+        If (worknum = 0) Then Events 1                              'nç§’åè¿›è¡Œä¿å­˜æ“ä½œ
         worknum = worknum + 1
     End If
 End Sub
 
-Sub RGBtoH(lColour As Long, H As Long) 'RGB×ª»»³É»Ò¶ÈÖµ
+Sub RGBtoH(lColour As Long, H As Long) 'RGBè½¬æ¢æˆç°åº¦å€¼
     Dim R As Long, G As Long, B As Long
     R = lColour Mod 256
     G = ((lColour And &HFF00&) \ 256&) Mod 256&
@@ -311,7 +310,7 @@ Sub RGBtoH(lColour As Long, H As Long) 'RGB×ª»»³É»Ò¶ÈÖµ
     H = (R * 77 + G * 150 + B * 29) \ 256
 End Sub
 
-Sub Events(n As Double) 'ÔİÍ£nÃë£¬ÆÚ¼ä¿ÉÒÔ½øĞĞÆäËû²Ù×÷,Ö÷ÒªÓÃÓÚµÈ´ıÒ³Ãæ¼ÓÔØÍê³É
+Sub Events(n As Double) 'æš‚åœnç§’ï¼ŒæœŸé—´å¯ä»¥è¿›è¡Œå…¶ä»–æ“ä½œ,ä¸»è¦ç”¨äºç­‰å¾…é¡µé¢åŠ è½½å®Œæˆ
     Dim t As Double
     t = Timer
     While Timer < t + n
@@ -319,7 +318,7 @@ Sub Events(n As Double) 'ÔİÍ£nÃë£¬ÆÚ¼ä¿ÉÒÔ½øĞĞÆäËû²Ù×÷,Ö÷ÒªÓÃÓÚµÈ´ıÒ³Ãæ¼ÓÔØÍê³É
     Wend
 End Sub
 
-Private Sub SingleClick() '·ÀÖ¹ÆÁÄ»ºÚÆÁ£¬Ä£ÄâÊó±êµ¥»÷
+Private Sub SingleClick() 'é˜²æ­¢å±å¹•é»‘å±ï¼Œæ¨¡æ‹Ÿé¼ æ ‡å•å‡»
   Dim pLocation As POINT
   Call GetCursorPos(pLocation)
   SetCursorPos pLocation.x, pLocation.Y 'x and y position
@@ -327,15 +326,15 @@ Private Sub SingleClick() '·ÀÖ¹ÆÁÄ»ºÚÆÁ£¬Ä£ÄâÊó±êµ¥»÷
   mouse_event MOUSEEVENTF_LEFTUP, 0, 0, 0, 0
 End Sub
                         
-Sub get_point() '¸¨Öú¹¦ÄÜ
-    '´Ë¹¦ÄÜÓÃÓÚ²éÕÒ¸÷¸öÎ»ÖÃÔÚÆÁÄ»µÄÖµ£¬µÃÌìÖµÖ®ºóÅäÖÃµ½ÉÏÃæ¸÷¸öÏàÓ¦Î»ÖÃ¡£
+Sub get_point() 'è¾…åŠ©åŠŸèƒ½
+    'æ­¤åŠŸèƒ½ç”¨äºæŸ¥æ‰¾å„ä¸ªä½ç½®åœ¨å±å¹•çš„å€¼ï¼Œå¾—å¤©å€¼ä¹‹åé…ç½®åˆ°ä¸Šé¢å„ä¸ªç›¸åº”ä½ç½®ã€‚
     Dim pLocation As POINT
     Dim lColour As Long, aaa
     Dim lDC As Variant, R, G, B
     'Application.ActiveWindow.Selection.GoTo wdGoToPage, wdGoToNext, , 1
     lDC = GetWindowDC(0)
     Call GetCursorPos(pLocation)
-    lColour = GetPixel(lDC, pLocation.x, pLocation.Y)   'ĞèÒªµÄ×ø±êÖµÔÚÕâÀï¡£
+    lColour = GetPixel(lDC, pLocation.x, pLocation.Y)   'éœ€è¦çš„åæ ‡å€¼åœ¨è¿™é‡Œã€‚
     '    '(746-185)*2=561*2= 1122 /297=3.777777
     'm = pLocation.x
     'n = pLocation.y
